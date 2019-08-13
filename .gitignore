@@ -1,0 +1,7 @@
+*.pyc
+test_package/build
+.vs/
+.vscode/
+CMakeSettings.json
+build/
+out/
