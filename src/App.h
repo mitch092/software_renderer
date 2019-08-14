@@ -45,7 +45,9 @@ class App {
  private:
   void render() {
     Renderer renderer{Frame{screen}};
-    renderer.draw_line1(13, 20, 80, 40, Pixel{255, 255, 255});
+    renderer.draw_line_v7(13, 20, 80, 40, Pixel{255, 255, 255});
+    renderer.draw_line_v7(20, 13, 40, 80, Pixel{255, 0, 0});
+    renderer.draw_line_v7(80, 40, 13, 20, Pixel{255, 0, 0});
   }
 
   bool success;
