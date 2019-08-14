@@ -1,39 +1,32 @@
 #pragma once
 #include "Error.h"
+#include "Pixel.h"
 #include "SDL.h"
-
-struct Pixel {
-  Pixel(Uint8 _r, Uint8 _g, Uint8 _b) : r(_r), g(_g), b(_b) {}
-  Pixel() : Pixel(0, 0, 0) {}
-  Uint8 r, g, b;
-};
 
 class Renderer {
  public:
   Renderer(SDL_Surface* _surface) : surface(_surface), error() {
     if (SDL_MUSTLOCK(surface)) {
       if (SDL_LockSurface(surface) < 0) {
-        error.throw_runtime_error("lock screen");
+        error.throw_runtime_error("lock the screen");
       }
     }
   }
   ~Renderer() {
+    flip_in_place_horizontally(surface);
     if (SDL_MUSTLOCK(surface)) {
       SDL_UnlockSurface(surface);
     }
   }
-  void draw_line(int x0, int y0, int x1, int y1, Pixel pixel) {
-    for (float t = 0.0f; t < 1.0f; t += 0.01f) {
-      float x = x0 + (x1 - x0) * t;
-      float y = y0 + (y1 - y0) * t;
-      put_pixel((int)x, (int)y, pixel);
-    }
-  }
+
+  Pixel get_pixel(int x, int y) { return get_pixel(surface, x, y); }
+  void put_pixel(int x, int y, Pixel _pixel) { return put_pixel(surface, x, y, _pixel); }
 
  private:
-  Pixel get_pixel(int x, int y) {
-    int bpp = surface->format->BytesPerPixel;
-    Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
+  Pixel get_pixel(SDL_Surface* _surface, int x, int y) {
+    int bpp = _surface->format->BytesPerPixel;
+
+    Uint8* p = (Uint8*)_surface->pixels + y * _surface->pitch + x * bpp;
 
     Uint32 pixel;
 
@@ -59,14 +52,14 @@ class Renderer {
     }
 
     Uint8 red, green, blue;
-    SDL_GetRGB(pixel, surface->format, &red, &green, &blue);
+    SDL_GetRGB(pixel, _surface->format, &red, &green, &blue);
     return Pixel(red, green, blue);
   }
-  void put_pixel(int x, int y, Pixel _pixel) {
-    Uint32 pixel = SDL_MapRGB(surface->format, _pixel.r, _pixel.g, _pixel.b);
+  void put_pixel(SDL_Surface* _surface, int x, int y, Pixel _pixel) {
+    Uint32 pixel = SDL_MapRGB(_surface->format, _pixel.r, _pixel.g, _pixel.b);
 
-    int bpp = surface->format->BytesPerPixel;
-    Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
+    int bpp = _surface->format->BytesPerPixel;
+    Uint8* p = (Uint8*)_surface->pixels + y * _surface->pitch + x * bpp;
 
     switch (bpp) {
       case 1:
@@ -89,6 +82,26 @@ class Renderer {
       case 4:
         *(Uint32*)p = pixel;
         break;
+    }
+  }
+
+  void swap_pixels(SDL_Surface* _surface, int x0, int y0, int x1, int y1) {
+    Pixel pixel0 = get_pixel(_surface, x0, y0);
+    put_pixel(_surface, x0, y0, get_pixel(_surface, x1, y1));
+    put_pixel(_surface, x1, y1, pixel0);
+  }
+  void flip_in_place_vertically(SDL_Surface* _surface) {
+    for (int y = 0; y != surface->h; ++y) {
+      for (int x = 0; x != (surface->w / 2); ++x) {
+        swap_pixels(_surface, x, y, surface->w - 1 - x, y);
+      }
+    }
+  }
+  void flip_in_place_horizontally(SDL_Surface* _surface) {
+    for (int x = 0; x != surface->w; ++x) {
+      for (int y = 0; y != (surface->h / 2); ++y) {
+        swap_pixels(_surface, x, y, x, surface->h - 1 - y);
+      }
     }
   }
 
