@@ -4,6 +4,7 @@
 #include "Error.h"
 #include "Renderer.h"
 #include "SDL.h"
+#include "DrawLine.h"
 
 class App {
  public:
@@ -23,18 +24,14 @@ class App {
       if (window != nullptr) SDL_DestroyWindow(window);
       SDL_Quit();
     }
-  }
-  // Pass a rendering function in via the main procedure (at compile time).
-  // TODO: pull the draw_line function completely out of Renderer and App.
-  // TODO: write a function in Renderer that flips the screen after it renders.
-  template <typename F>
-  App& render(F func) {
-    Renderer renderer(screen);
-    renderer.draw_line(13, 20, 80, 40, Pixel(255, 255, 255));
+  }  
+
+  App& render(DrawLine& drawline) {
+    drawline(Renderer(screen));
     return *this;
   }
 
-  void run() {
+  void display() {
     bool quit = false;
     SDL_Event e;
 
@@ -49,6 +46,8 @@ class App {
   }
 
  private:
+  
+
   bool success;
   SDL_Window* window;
   SDL_Surface* screen;
