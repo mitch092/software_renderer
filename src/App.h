@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>  // For benchmarking the various draw_line versions.
 #include <stdexcept>
 #include <string>
 #include "Error.h"
@@ -26,8 +27,20 @@ class App {
     }
   }
 
+  App& render(const char* filename) {
+    Renderer renderer{Frame{screen}};
+
+    auto start = std::chrono::system_clock::now();
+    renderer.draw_wireframe(filename);
+    auto end = std::chrono::system_clock::now();
+    std::cerr << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+              << " milliseconds\n";
+
+    return *this;
+  }
+
   void display() {
-    render();
+    // render();
 
     bool quit = false;
     SDL_Event e;
@@ -43,13 +56,6 @@ class App {
   }
 
  private:
-  void render() {
-    Renderer renderer{Frame{screen}};
-    renderer.draw_line_v7(13, 20, 80, 40, Pixel{255, 255, 255});
-    renderer.draw_line_v7(20, 13, 40, 80, Pixel{255, 0, 0});
-    renderer.draw_line_v7(80, 40, 13, 20, Pixel{255, 0, 0});
-  }
-
   bool success;
   SDL_Window* window;
   SDL_Surface* screen;
