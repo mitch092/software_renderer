@@ -4,10 +4,13 @@
 
 
 int main(int argc, char* argv[]) {
+
+
+
   try {
 
-    App app("Test window", 100, 100);
-    app.display();
+    App app("tinyrenderer in SDL", 800, 800);
+    app.render("assets/african_head.obj").display();
 
   } catch (const std::runtime_error& error) {
 

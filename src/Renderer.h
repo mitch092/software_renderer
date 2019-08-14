@@ -1,6 +1,9 @@
 #pragma once
+#include <vector>
 #include "Frame.h"
 #include "Pixel.h"
+#include "model.h"
+
 
 class Renderer {
  public:
@@ -179,6 +182,23 @@ class Renderer {
           y += yincr;
           error2 -= dx * 2;
         }
+      }
+    }
+  }
+
+  void draw_wireframe(const char* filename) {
+    Model model(filename);
+    
+    for (int i = 0; i < model.nfaces(); ++i) {
+      std::vector<int> face = model.face(i);
+      for (int j = 0; j < 3; ++j) {
+        Vec3f v0 = model.vert(face[j]);
+        Vec3f v1 = model.vert(face[(j+1)%3]);
+        int x0 = (v0.x + 1.0) * frame.get_width() / 2.0;
+        int y0 = (v0.y + 1.0) * frame.get_height() / 2.0;
+        int x1 = (v1.x + 1.0) * frame.get_width() / 2.0;
+        int y1 = (v1.y + 1.0) * frame.get_height() / 2.0;
+        draw_line_v7(x0, y0, x1, y1, Pixel{255, 255, 255});
       }
     }
   }
