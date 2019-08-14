@@ -2,9 +2,9 @@
 #include <stdexcept>
 #include <string>
 #include "Error.h"
+#include "Frame.h"
 #include "Renderer.h"
 #include "SDL.h"
-#include "DrawLine.h"
 
 class App {
  public:
@@ -24,14 +24,11 @@ class App {
       if (window != nullptr) SDL_DestroyWindow(window);
       SDL_Quit();
     }
-  }  
-
-  App& render(DrawLine& drawline) {
-    drawline(Renderer(screen));
-    return *this;
   }
 
   void display() {
+    render();
+
     bool quit = false;
     SDL_Event e;
 
@@ -46,7 +43,10 @@ class App {
   }
 
  private:
-  
+  void render() {
+    Renderer renderer{Frame{screen}};
+    renderer.draw_line1(13, 20, 80, 40, Pixel{255, 255, 255});
+  }
 
   bool success;
   SDL_Window* window;
