@@ -20,7 +20,10 @@ class Frame {
   }
 
   Pixel get_pixel(int x, int y) { return get_pixel(surface, x, y); }
-  void put_pixel(int x, int y, Pixel _pixel) { return put_pixel(surface, x, y, _pixel); }
+  void put_pixel(int x, int y, const Pixel& _pixel) { return put_pixel(surface, x, y, _pixel); }
+
+  int get_height() { return screen->h; }
+  int get_width() { return screen->w; }
 
  private:
   Pixel get_pixel(SDL_Surface* _surface, int x, int y) {
@@ -55,7 +58,7 @@ class Frame {
     SDL_GetRGB(pixel, _surface->format, &red, &green, &blue);
     return Pixel(red, green, blue);
   }
-  void put_pixel(SDL_Surface* _surface, int x, int y, Pixel _pixel) {
+  void put_pixel(SDL_Surface* _surface, int x, int y, const Pixel& _pixel) {
     Uint32 pixel = SDL_MapRGB(_surface->format, _pixel.r, _pixel.g, _pixel.b);
 
     int bpp = _surface->format->BytesPerPixel;
