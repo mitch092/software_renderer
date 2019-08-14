@@ -22,11 +22,16 @@ class Frame {
   Pixel get_pixel(int x, int y) { return get_pixel(surface, x, y); }
   void put_pixel(int x, int y, const Pixel& _pixel) { return put_pixel(surface, x, y, _pixel); }
 
-  int get_height() { return screen->h; }
-  int get_width() { return screen->w; }
+  int get_height() { return surface->h; }
+  int get_width() { return surface->w; }
 
  private:
   Pixel get_pixel(SDL_Surface* _surface, int x, int y) {
+    if (!within_bounds(x, y)) {
+      // std::cerr << "A pixel fell out of bounds: " << x << " " << y << std::endl;
+      return Pixel{0, 0, 0};
+    }
+
     int bpp = _surface->format->BytesPerPixel;
 
     Uint8* p = (Uint8*)_surface->pixels + y * _surface->pitch + x * bpp;
@@ -59,6 +64,11 @@ class Frame {
     return Pixel(red, green, blue);
   }
   void put_pixel(SDL_Surface* _surface, int x, int y, const Pixel& _pixel) {
+    if (!within_bounds(x, y)) {
+      //std::cerr << "A pixel fell out of bounds: " << x << " " << y << std::endl;
+      return;
+    }
+
     Uint32 pixel = SDL_MapRGB(_surface->format, _pixel.r, _pixel.g, _pixel.b);
 
     int bpp = _surface->format->BytesPerPixel;
@@ -107,6 +117,8 @@ class Frame {
       }
     }
   }
+
+  bool within_bounds(int x, int y) { return (0 <= x && x < get_width()) && (0 <= y && y < get_height()); }
 
   SDL_Surface* surface;
 
