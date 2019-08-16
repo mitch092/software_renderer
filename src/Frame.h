@@ -1,6 +1,6 @@
 #pragma once
 #include "Error.h"
-#include "Pixel.h"
+#include "Color.h"
 #include "SDL.h"
 
 class Frame {
@@ -19,17 +19,17 @@ class Frame {
     }
   }
 
-  Pixel get_pixel(int x, int y) { return get_pixel(surface, x, y); }
-  void put_pixel(int x, int y, const Pixel& _pixel) { return put_pixel(surface, x, y, _pixel); }
+  Color get_pixel(int x, int y) { return get_pixel(surface, x, y); }
+  void put_pixel(int x, int y, const Color& _color) { return put_pixel(surface, x, y, _color); }
 
   int get_height() { return surface->h; }
   int get_width() { return surface->w; }
 
  private:
-  Pixel get_pixel(SDL_Surface* _surface, int x, int y) {
+  Color get_pixel(SDL_Surface* _surface, int x, int y) {
     if (!within_bounds(x, y)) {
       // std::cerr << "A pixel fell out of bounds: " << x << " " << y << std::endl;
-      return Pixel{0, 0, 0};
+      return Color{0, 0, 0};
     }
 
     int bpp = _surface->format->BytesPerPixel;
@@ -61,15 +61,15 @@ class Frame {
 
     Uint8 red, green, blue;
     SDL_GetRGB(pixel, _surface->format, &red, &green, &blue);
-    return Pixel(red, green, blue);
+    return Color(red, green, blue);
   }
-  void put_pixel(SDL_Surface* _surface, int x, int y, const Pixel& _pixel) {
+  void put_pixel(SDL_Surface* _surface, int x, int y, const Color& _color) {
     if (!within_bounds(x, y)) {
       //std::cerr << "A pixel fell out of bounds: " << x << " " << y << std::endl;
       return;
     }
 
-    Uint32 pixel = SDL_MapRGB(_surface->format, _pixel.r, _pixel.g, _pixel.b);
+    Uint32 pixel = SDL_MapRGB(_surface->format, _color.r, _color.g, _color.b);
 
     int bpp = _surface->format->BytesPerPixel;
     Uint8* p = (Uint8*)_surface->pixels + y * _surface->pitch + x * bpp;
@@ -99,9 +99,9 @@ class Frame {
   }
 
   void swap_pixels(SDL_Surface* _surface, int x0, int y0, int x1, int y1) {
-    Pixel pixel0 = get_pixel(_surface, x0, y0);
+    Color color0 = get_pixel(_surface, x0, y0);
     put_pixel(_surface, x0, y0, get_pixel(_surface, x1, y1));
-    put_pixel(_surface, x1, y1, pixel0);
+    put_pixel(_surface, x1, y1, color0);
   }
   void flip_in_place_vertically(SDL_Surface* _surface) {
     for (int y = 0; y != surface->h; ++y) {
