@@ -1,16 +1,11 @@
 #include <iostream>
 #include "App.h"
 
-
-
 int main(int argc, char* argv[]) {
-
-
-
   try {
 
     App app("tinyrenderer in SDL", 800, 800);
-    app.render("assets/african_head.obj").display();
+    app.display();
 
   } catch (const std::runtime_error& error) {
 

@@ -27,20 +27,11 @@ class App {
     }
   }
 
-  App& render(const char* filename) {
-    Renderer renderer{Frame{screen}};
-
-    auto start = std::chrono::system_clock::now();
-    renderer.draw_wireframe(filename);
-    auto end = std::chrono::system_clock::now();
-    std::cerr << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-              << " milliseconds\n";
-
-    return *this;
-  }
+  
 
   void display() {
-    // render();
+    //render("assets/african_head.obj");
+    render_test();
 
     bool quit = false;
     SDL_Event e;
@@ -56,6 +47,29 @@ class App {
   }
 
  private:
+  void render(const char* filename) {
+    // Frame locks the SDL surface. The surface is unlocked when
+    // the Renderer and the frame go out of scope (which is at the end of this render method).
+    Renderer renderer{Frame{screen}};
+    Model model(filename);
+
+    auto start = std::chrono::system_clock::now();
+    renderer.draw_wireframe(model);
+    auto end = std::chrono::system_clock::now();
+    std::cerr << "Elapsed time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+              << " milliseconds\n";
+  }
+
+  void render_test() {
+    Renderer renderer{Frame{screen}};
+    renderer.draw_triangle(Vec2i(10, 70), Vec2i(50, 160), Vec2i(70, 80), Color{255, 0, 0});
+    renderer.draw_triangle(Vec2i(180, 50), Vec2i(150, 1), Vec2i(70, 180), Color{255, 255, 255});
+    renderer.draw_triangle(Vec2i(180, 150), Vec2i(120, 160), Vec2i(130, 180), Color{0, 255, 0});
+    //renderer.draw_triangle(Vec2i(0, 0), Vec2i(799, 0), Vec2i(799/2, 799), Color{0, 255, 0});
+
+  }
+
+
   bool success;
   SDL_Window* window;
   SDL_Surface* screen;
