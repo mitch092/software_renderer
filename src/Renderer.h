@@ -2,7 +2,7 @@
 #include <vector>
 #include "Color.h"
 #include "Frame.h"
-#include "geometry.h"
+#include "glm.hpp"
 #include "model.h"
 
 class Renderer {
@@ -10,11 +10,11 @@ class Renderer {
   Renderer(Frame& _frame) : frame(_frame) {}
 
   // Final version of the line drawing function.
-  void draw_line(const Vec2i& a, const Vec2i& b, const Color& color) {
-    int x0 = a.raw[0];
-    int y0 = a.raw[1];
-    int x1 = b.raw[0];
-    int y1 = b.raw[1];
+  void draw_line(const glm::ivec2& a, const glm::ivec2& b, const Color& color) {
+    int x0 = a.x;
+    int y0 = a.y;
+    int x1 = b.x;
+    int y1 = b.y;
 
     bool steep = false;
     if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
@@ -59,26 +59,26 @@ class Renderer {
     for (int i = 0; i < model.nfaces(); ++i) {
       std::vector<int> face = model.face(i);
       for (int j = 0; j < 3; ++j) {
-        Vec3f v0 = model.vert(face[j]);
-        Vec3f v1 = model.vert(face[(j + 1) % 3]);
+        glm::vec3 v0 = model.vert(face[j]);
+        glm::vec3 v1 = model.vert(face[(j + 1) % 3]);
         int x0 = (v0.x + 1.0) * frame.get_width() / 2.0;
         int y0 = (v0.y + 1.0) * frame.get_height() / 2.0;
         int x1 = (v1.x + 1.0) * frame.get_width() / 2.0;
         int y1 = (v1.y + 1.0) * frame.get_height() / 2.0;
-        draw_line(Vec2i(x0, y0), Vec2i(x1, y1), Color{255, 255, 255});
+        draw_line(glm::ivec2(x0, y0), glm::ivec2(x1, y1), Color{255, 255, 255});
       }
     }
   }
 
-  void draw_triangle_outline(const Vec2i& t0, const Vec2i& t1, const Vec2i& t2, const Color& color) {
+  void draw_triangle_outline(const glm::ivec2& t0, const glm::ivec2& t1, const glm::ivec2& t2, const Color& color) {
     draw_line(t0, t1, color);
     draw_line(t1, t2, color);
     draw_line(t2, t0, color);
   }
 
-  void draw_triangle_v1(const Vec2i& t0, const Vec2i& t1, const Vec2i& t2, const Color& color) {
+  /*void draw_triangle_v1(const glm::ivec2& t0, const glm::ivec2& t1, const glm::ivec2& t2, const Color& color) {
     // draw_triangle_outline(t0, t1, t2, color);
-    Vec2i center = (t0 + t1 + t2) * (1.0 / 3.0);
+    glm::ivec2 center = (1.0 / 3.0) * (t0 + t1 + t2);
 
     auto same = [](Vec2i& t0, Vec2i& t1) { return t0.raw[0] == t1.raw[0] && t0.raw[1] == t1.raw[1]; };
     auto incr = [&](Vec2i& from) {
@@ -99,7 +99,7 @@ class Renderer {
     }
     draw_triangle_outline(p0, p1, p2, color);
   }
-
+  */
 
 
  private:
