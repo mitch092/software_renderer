@@ -3,6 +3,7 @@
 #include <vector>
 #include "Color.h"
 #include "Frame.h"
+#include "SDL.h"
 #include "glm.hpp"
 #include "model.h"
 
@@ -55,108 +56,27 @@ class Renderer {
     }
   }
 
-  void draw_wireframe(Model& model) {
-    for (int i = 0; i < model.nfaces(); ++i) {
-      std::vector<int> face = model.face(i);
-      for (int j = 0; j < 3; ++j) {
-        glm::vec3 v0 = model.vert(face[j]);
-        glm::vec3 v1 = model.vert(face[(j + 1) % 3]);
-        int x0 = (v0.x + 1.0) * frame.get_width() / 2.0;
-        int y0 = (v0.y + 1.0) * frame.get_height() / 2.0;
-        int x1 = (v1.x + 1.0) * frame.get_width() / 2.0;
-        int y1 = (v1.y + 1.0) * frame.get_height() / 2.0;
-        draw_line(glm::ivec2(x0, y0), glm::ivec2(x1, y1), Color{255, 255, 255});
-      }
-    }
-  }
-
-  void draw_triangle_v1(const glm::ivec2& t0, const glm::ivec2& t1, const glm::ivec2& t2, const Color& color) {
+  void draw_triangle_outline(const glm::ivec2& t0, const glm::ivec2& t1, const glm::ivec2& t2, const Color& color) {
     draw_line(t0, t1, color);
     draw_line(t1, t2, color);
-    draw_line(t2, t0, color);
+    draw_line(t2, t1, color);
   }
 
-  void draw_triangle_v2(glm::ivec2 t0, glm::ivec2 t1, glm::ivec2 t2) {
-    if (t0.y > t1.y) std::swap(t0, t1);
-    if (t0.y > t2.y) std::swap(t0, t2);
-    if (t1.y > t2.y) std::swap(t1, t2);
-    draw_line(t0, t1, Color{0, 255, 0});
-    draw_line(t1, t2, Color{0, 255, 0});
-    draw_line(t2, t0, Color{255, 0, 0});
-  }
+  void draw_wireframe(Model& model) {
+    for (int i = 0; i < model.nfaces(); ++i) {
+      glm::vec3 v0 = model.vert(model.face(i)[0]);
+      glm::vec3 v1 = model.vert(model.face(i)[1]);
+      glm::vec3 v2 = model.vert(model.face(i)[2]);
 
-  void draw_triangle_v3(glm::ivec2 t0, glm::ivec2 t1, glm::ivec2 t2) {
-    if (t0.y > t1.y) std::swap(t0, t1);
-    if (t0.y > t2.y) std::swap(t0, t2);
-    if (t1.y > t2.y) std::swap(t1, t2);
+      glm::ivec2 a = vec3_to_ivec2(v0);
+      glm::ivec2 b = vec3_to_ivec2(v1);
+      glm::ivec2 c = vec3_to_ivec2(v2);
 
-    const int total_height = t2.y - t0.y;
-    const int segment_height = t1.y - t0.y + 1;
-
-    for (int y = t0.y; y <= t1.y; ++y) {
-      float alpha = (float)(y - t0.y) / total_height;
-      float beta = (float)(y - t0.y) / segment_height;
-      glm::ivec2 A = glm::vec2(t0) + glm::vec2(t2 - t0) * alpha;
-      glm::ivec2 B = glm::vec2(t0) + glm::vec2(t1 - t0) * beta;
-      frame.put_pixel(A.x, y, Color{255, 0, 0});
-      frame.put_pixel(B.x, y, Color{0, 255, 0});
+      draw_triangle_outline(a, b, c, Color{255, 255, 255});
     }
   }
 
-  void draw_triangle_v4(glm::ivec2 t0, glm::ivec2 t1, glm::ivec2 t2, const Color& color) {
-    if (t0.y > t1.y) std::swap(t0, t1);
-    if (t0.y > t2.y) std::swap(t0, t2);
-    if (t1.y > t2.y) std::swap(t1, t2);
-
-    const int total_height = t2.y - t0.y;
-    const int lower_segment_height = t1.y - t0.y + 1;
-    const int upper_segment_height = t2.y - t1.y + 1;
-
-    for (int y = t0.y; y <= t1.y; ++y) {
-      float alpha = (float)(y - t0.y) / total_height;
-      float beta = (float)(y - t0.y) / lower_segment_height;
-      glm::ivec2 A = glm::vec2(t0) + glm::vec2(t2 - t0) * alpha;
-      glm::ivec2 B = glm::vec2(t0) + glm::vec2(t1 - t0) * beta;
-      if (A.x > B.x) std::swap(A, B);
-      for (int j = A.x; j < B.x; ++j) {
-        frame.put_pixel(j, y, color);
-      }
-    }
-
-    for (int y = t1.y; y <= t2.y; ++y) {
-      float alpha = (float)(y - t0.y) / total_height;
-      float beta = (float)(y - t1.y) / upper_segment_height;
-      glm::ivec2 A = glm::vec2(t0) + glm::vec2(t2 - t0) * alpha;
-      glm::ivec2 B = glm::vec2(t1) + glm::vec2(t2 - t1) * beta;
-      if (A.x > B.x) std::swap(A, B);
-      for (int j = A.x; j <= B.x; ++j) {
-        frame.put_pixel(j, y, color);
-      }
-    }
-  }
-
-  void draw_triangle_v5(glm::ivec2 t0, glm::ivec2 t1, glm::ivec2 t2, const Color& color) {
-    if (t0.y == t1.y && t0.y == t2.y) return;
-    if (t0.y > t1.y) std::swap(t0, t1);
-    if (t0.y > t2.y) std::swap(t0, t2);
-    if (t1.y > t2.y) std::swap(t1, t2);
-    const int total_height = t2.y - t0.y;
-    for (int i = 0; i < total_height; ++i) {
-      bool second_half = i > t1.y - t0.y || t1.y == t0.y;
-      int segment_height = second_half ? t2.y - t1.y : t1.y - t0.y;
-      float alpha = (float)i / total_height;
-      float beta = (float)(i - (second_half ? t1.y - t0.y : 0)) / segment_height;
-      glm::ivec2 A = glm::vec2(t0) + glm::vec2(t2 - t0) * alpha;
-      glm::ivec2 B = second_half ? glm::vec2(t1) + glm::vec2(t2 - t1) * beta : glm::vec2(t0) + glm::vec2(t1 - t0) * beta;
-      if (A.x > B.x) std::swap(A, B);
-      for (int j = A.x; j <= B.x; ++j) {
-        frame.put_pixel(j, t0.y + i, color);
-      }
-    }
-  }
-
-  std::pair<glm::ivec2, glm::ivec2> find_bounding_box(const glm::ivec2& t0, const glm::ivec2& t1,
-                                                                   const glm::ivec2& t2) {
+  std::pair<glm::ivec2, glm::ivec2> find_bounding_box(const glm::ivec2& t0, const glm::ivec2& t1, const glm::ivec2& t2) {
     // Take care of the edge case in which the triangle is not in the frame at all.
     if (!(frame.in_frame(t0.x, t0.y) && frame.in_frame(t1.x, t1.y) && frame.in_frame(t2.x, t2.y))) {
       return {glm::ivec2(0, 0), glm::ivec2(0, 0)};
@@ -185,7 +105,7 @@ class Renderer {
     return glm::vec3(1.0f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
   }
 
-  void draw_triangle_v6(const glm::ivec2& t0, const glm::ivec2& t1, const glm::ivec2& t2, const Color& color) {
+  void draw_triangle(const glm::ivec2& t0, const glm::ivec2& t1, const glm::ivec2& t2, const Color& color) {
     auto box = find_bounding_box(t0, t1, t2);
     for (int y = box.first.y; y <= box.second.y; ++y) {
       for (int x = box.first.x; x <= box.second.x; ++x) {
@@ -195,6 +115,34 @@ class Renderer {
     }
   }
 
+  void draw_flat_rainbow_shaded_model(Model& model) {
+    for (int i = 0; i < model.nfaces(); ++i) {
+      glm::vec3 v0 = model.vert(model.face(i)[0]);
+      glm::vec3 v1 = model.vert(model.face(i)[1]);
+      glm::vec3 v2 = model.vert(model.face(i)[2]);
+      
+      glm::ivec2 a = vec3_to_ivec2(v0);
+      glm::ivec2 b = vec3_to_ivec2(v1);
+      glm::ivec2 c = vec3_to_ivec2(v2);
+
+      draw_triangle(a, b, c, Color{(Uint8)(rand() % 255), (Uint8)(rand() % 255), (Uint8)(rand() % 255)});
+    }
+  }
+
  private:
+  glm::ivec2 vec3_to_ivec2(glm::vec3 vec) {
+    // OBJ model vertices are a triplet of vertices, each between -1 and 1.
+    // Trim off the z vertex.
+    auto vec2 = glm::vec2(vec.x, vec.y);
+    // Add 1 so that the vector is now between 0 and 2.
+    vec2 += glm::vec2(1.0f, 1.0f);
+    // Divide by 2 so that the vector is now between 0 and 1.
+    vec2 /= 2.0f;
+    // Multiply the coordinates so that they map onto the frame.
+    vec2.x *= frame.get_width();
+    vec2.y *= frame.get_height();
+    return glm::ivec2(vec2);
+  }
+
   Frame frame;
 };
