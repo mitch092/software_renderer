@@ -1,6 +1,6 @@
 #pragma once
-#include "Error.h"
 #include "Color.h"
+#include "Error.h"
 #include "SDL.h"
 
 class Frame {
@@ -24,6 +24,8 @@ class Frame {
 
   int get_height() { return surface->h; }
   int get_width() { return surface->w; }
+
+  bool in_frame(int x, int y) { return (0 <= x && x < get_width() && 0 <= y && y < get_height()); }
 
  private:
   Color get_pixel(SDL_Surface* _surface, int x, int y) {
@@ -65,7 +67,7 @@ class Frame {
   }
   void put_pixel(SDL_Surface* _surface, int x, int y, const Color& _color) {
     if (!within_bounds(x, y)) {
-      //std::cerr << "A pixel fell out of bounds: " << x << " " << y << std::endl;
+      // std::cerr << "A pixel fell out of bounds: " << x << " " << y << std::endl;
       return;
     }
 
