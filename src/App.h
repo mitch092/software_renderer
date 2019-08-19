@@ -33,7 +33,7 @@ class App {
 
   void display() {
     prepare_model();
-    render();
+    // render();
 
     bool quit = false;
     SDL_Event e;
@@ -44,6 +44,8 @@ class App {
           quit = true;
         }
       }
+      rotate();
+      render();
       SDL_UpdateWindowSurface(window);
     }
   }
@@ -55,22 +57,30 @@ class App {
   void prepare_model() {
     // Add 1.
     auto translate = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    // Divide every component by 2. 
+    // Divide every component by 2.
     auto scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-	// Multiply x and y by width and height.
+    // Multiply x and y by width and height. Not sure about z. Need to test with rectangular windows.
     auto scale2 = glm::scale(glm::mat4(1.0f), glm::vec3(screen->w, screen->h, (screen->w + screen->h) / 2));
     model.apply_matrix_transform(scale2 * scale * translate);
+  }
+
+  void rotate() {
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), 0.8f, glm::vec3(0, 1, 0));
+    model.apply_matrix_transform(rotation);
   }
 
   void render() {
     Stopwatch watch;
     Renderer renderer{Frame{screen}};
 
-    watch.reset_and_start();
+    renderer.clear_screen(Color{0, 0, 0});
+    // watch.reset_and_start();
     // renderer.draw_wireframe(model);
     // renderer.draw_flat_rainbow_shaded_model(model);
     renderer.draw_model_lighted(model);
-    watch.stop_and_print();
+    // renderer.draw_triangle(RenderableTriangle{glm::ivec2{100, 100}, glm::ivec2{900, 100}, glm::ivec2{799/2 + 100, 900}},
+    // Color{0, 255, 0});
+    // watch.stop_and_print();
   }
 
   bool success;
