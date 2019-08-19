@@ -1,5 +1,7 @@
 #pragma once
 #include <chrono>  // For benchmarking the various draw_line versions.
+#include <glm.hpp>
+#include <gtx/transform.hpp>
 #include <stdexcept>
 #include <string>
 #include "Benchmark.h"
@@ -11,7 +13,7 @@
 class App {
  public:
   App(const char* name, int width, int height, const char* _model)
-      : success(false), window(nullptr), screen(nullptr), model(Model{_model}), error() {
+      : success(false), window(nullptr), screen(nullptr), model(_model), error() {
     success = SDL_Init(SDL_INIT_VIDEO) >= 0;
     if (success == false) error.throw_runtime_error("initialize SDL");
 
@@ -30,6 +32,7 @@ class App {
   }
 
   void display() {
+    prepare_model();
     render();
 
     bool quit = false;
@@ -40,20 +43,32 @@ class App {
         if (e.type == SDL_QUIT) {
           quit = true;
         }
-      }  
+      }
       SDL_UpdateWindowSurface(window);
     }
   }
 
  private:
+  // The model is in units -1 to 1.
+  // Add 1 to every component, divide every component by 2, then multiply the x and y
+  // coordinates by the size of the screen.
+  void prepare_model() {
+    // Add 1.
+    auto translate = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    // Divide every component by 2. 
+    auto scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	// Multiply x and y by width and height.
+    auto scale2 = glm::scale(glm::mat4(1.0f), glm::vec3(screen->w, screen->h, (screen->w + screen->h) / 2));
+    model.apply_matrix_transform(scale2 * scale * translate);
+  }
 
   void render() {
     Stopwatch watch;
     Renderer renderer{Frame{screen}};
 
     watch.reset_and_start();
-    //renderer.draw_wireframe(model);
-    //renderer.draw_flat_rainbow_shaded_model(model);
+    // renderer.draw_wireframe(model);
+    // renderer.draw_flat_rainbow_shaded_model(model);
     renderer.draw_model_lighted(model);
     watch.stop_and_print();
   }
@@ -61,7 +76,7 @@ class App {
   bool success;
   SDL_Window* window;
   SDL_Surface* screen;
-  GLM_Model model;
+  Model model;
 
   Error error;
 };
