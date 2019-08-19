@@ -3,7 +3,7 @@
 #include <vector>
 #include "Color.h"
 #include "Frame.h"
-#include "GLM_Model.h"
+#include "Model.h"
 #include "Primitives.h"
 #include "SDL.h"
 #include "glm.hpp"
@@ -63,8 +63,8 @@ class Renderer {
     draw_line(tri.c, tri.a, color);
   }
 
-  void draw_wireframe(GLM_Model& model) {
-    for (auto tri : model.get_renderable_triangles(frame.get_width(), frame.get_height())) {
+  void draw_wireframe(Model& model) {
+    for (const auto& tri : model.get_renderable_triangles()) {
       draw_triangle_outline(tri, Color{255, 255, 255});
     }
   }
@@ -81,7 +81,7 @@ class Renderer {
     int bottom = std::min(tri.a.y, std::min(tri.b.y, tri.c.y));
     int top = std::max(tri.a.y, std::max(tri.b.y, tri.c.y));
 
-    // Now restrict it so that it's only in the frame.
+    //Now restrict it so that it's only in the frame.
     left = std::max(left, 0);
     right = std::min(right, (frame.get_width() - 1));
     bottom = std::max(bottom, 0);
@@ -108,21 +108,21 @@ class Renderer {
     }
   }
 
-  void draw_flat_rainbow_shaded_model(GLM_Model& model) {
-    for (auto tri : model.get_renderable_triangles(frame.get_width(), frame.get_height())) {
+  void draw_flat_rainbow_shaded_model(Model& model) {
+    for (const auto& tri : model.get_renderable_triangles()) {
       draw_triangle(tri, Color{(Uint8)(rand() % 255), (Uint8)(rand() % 255), (Uint8)(rand() % 255)});
     }
   }
 
-  void draw_model_lighted(GLM_Model& model) {
+  void draw_model_lighted(Model& model) {
     auto light_dir = glm::vec3(0, 0, -1);
-    auto screen_coord_triangles = model.get_renderable_triangles(frame.get_width(), frame.get_height());
+    auto screen_coord_triangles = model.get_renderable_triangles();
     auto world_coord_triangles = model.get_transformable_triangles();
     for (int i = 0; i != world_coord_triangles.size(); ++i) {
       auto tri1 = screen_coord_triangles[i];
       auto tri2 = world_coord_triangles[i];
       glm::vec3 n = glm::normalize(glm::cross(tri2.c - tri2.a, tri2.b - tri2.a));
-	  
+
       float intensity = glm::dot(n, light_dir);
       if (intensity > 0) {
         Uint8 shade = static_cast<Uint8>(intensity * 255);

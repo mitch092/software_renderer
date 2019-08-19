@@ -4,8 +4,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "Primitives.h"
 
-Model::Model(const char *filename) : verts_(), faces_() {
+Model::Model(const char* filename) : verts_(), faces_() {
   std::ifstream in;
   in.open(filename, std::ifstream::in);
   if (in.fail()) return;
@@ -20,7 +21,7 @@ Model::Model(const char *filename) : verts_(), faces_() {
       iss >> v.x;
       iss >> v.y;
       iss >> v.z;
-      //for (int i = 0; i < 3; i++) iss >> v.raw[i];
+      // for (int i = 0; i < 3; i++) iss >> v.raw[i];
       verts_.push_back(v);
     } else if (!line.compare(0, 2, "f ")) {
       std::vector<int> f;
@@ -45,3 +46,40 @@ int Model::nfaces() { return (int)faces_.size(); }
 std::vector<int> Model::face(int idx) { return faces_[idx]; }
 
 glm::vec3 Model::vert(int i) { return verts_[i]; }
+
+void Model::apply_matrix_transform(const glm::mat4& matrix) {
+  auto print = [](glm::vec3 vec3) { std::cerr << vec3.x << "," << vec3.y << "," << vec3.z << std::endl; };
+
+  for (int i = 0; i != verts_.size(); ++i) {
+    //print(verts_[i]);
+    auto vert4 = matrix * glm::vec4(verts_[i], 1.0f);
+    auto vert3 = glm::vec3(vert4);
+    //print(vert3);
+    verts_[i] = vert3;
+  }
+}
+
+std::vector<RenderableTriangle> Model::get_renderable_triangles() {
+  auto triangles = std::vector<RenderableTriangle>();
+  triangles.reserve(nfaces());
+
+  for (int i = 0; i != nfaces(); ++i) {
+    auto a = glm::ivec2(vert(face(i)[0]));
+    auto b = glm::ivec2(vert(face(i)[1]));
+    auto c = glm::ivec2(vert(face(i)[2]));
+    triangles.emplace_back(a, b, c);
+  }
+
+  return triangles;
+}
+
+std::vector<TransformableTriangle> Model::get_transformable_triangles() {
+  auto triangles = std::vector<TransformableTriangle>();
+  triangles.reserve(nfaces());
+
+  for (int i = 0; i != nfaces(); ++i) {
+    triangles.emplace_back(vert(face(i)[0]), vert(face(i)[1]), vert(face(i)[2]));
+  }
+
+  return triangles;
+}
