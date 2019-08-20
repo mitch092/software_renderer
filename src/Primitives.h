@@ -1,7 +1,7 @@
 #pragma once
 #include "glm.hpp"
 
-// T is ivec2 for render triangles, vec3 for transformable triangles.
+// T is ivec2 for renderable triangles, vec3 for transformable triangles.
 template <typename T>
 struct Triangle {
   Triangle(T _a, T _b, T _c) : a(_a), b(_b), c(_c) {}
