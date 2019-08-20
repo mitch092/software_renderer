@@ -65,8 +65,12 @@ class App {
   }
 
   void rotate() {
-    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), 0.8f, glm::vec3(0, 1, 0));
-    model.apply_matrix_transform(rotation);
+    glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(400, 400, 400));
+    glm::mat4 invTranslation = glm::inverse(translation);
+
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), 0.4f, glm::vec3(0, 1, 0));
+
+    model.apply_matrix_transform(translation * rotation * invTranslation);
   }
 
   void render() {
@@ -74,13 +78,13 @@ class App {
     Renderer renderer{Frame{screen}};
 
     renderer.clear_screen(Color{0, 0, 0});
-    // watch.reset_and_start();
+    watch.reset_and_start();
     // renderer.draw_wireframe(model);
     // renderer.draw_flat_rainbow_shaded_model(model);
     renderer.draw_model_lighted(model);
     // renderer.draw_triangle(RenderableTriangle{glm::ivec2{100, 100}, glm::ivec2{900, 100}, glm::ivec2{799/2 + 100, 900}},
     // Color{0, 255, 0});
-    // watch.stop_and_print();
+    watch.stop_and_print();
   }
 
   bool success;
