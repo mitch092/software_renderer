@@ -1,0 +1,17 @@
+# Run this once. -G defaults to vs 2019 for me.
+cmake -A "x64" -DCMAKE_BUILD_TYPE=Debug ../../
+# Run this every time after.
+cmake.exe --build . --config Debug
+
+# For extreme speed, do a release build.
+cmake -A "x64" -DCMAKE_BUILD_TYPE=Release ../../
+cmake.exe --build . --config Release
+
+# In order to find which configuration options are available,
+# I use "cmake -LH ../../"
+# Not sure how to enable them in CMakeLists.txt,
+# so I just add "-DKEY=VAL" to the command line. It works!
+# In order to use the intel compiler, I open up the dev console for the intel compiler
+# cd into my project's build directory, and run this command.
+cmake -DCMAKE_C_COMPILER=icl -DCMAKE_CXX_COMPILER=icl -DCMAKE_BUILD_TYPE=Release -G "Ninja" ../../
+cmake.exe --build . 
