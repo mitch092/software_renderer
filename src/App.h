@@ -46,12 +46,12 @@ class App {
           quit = true;
         }
       }
-	  // Rotate 360 degrees every second.
+      // Rotate 360 degrees every second.
       //rotate(watch.get_elapsed_seconds(), glm::two_pi<float>());
       //render();
 
       SDL_UpdateWindowSurface(window);
-      watch.stop_and_print_fps();
+      //watch.stop_and_print_fps();
     }
   }
 
@@ -72,11 +72,11 @@ class App {
   void rotate(float delta_time, float radians) {
     float angle = radians * delta_time;
 
-    // Get the current coordinates of the model. This is the point to rotate around.
+    // Save the current coordinates of the model. This is the point to rotate around.
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(400, 400, 400));
     // Apply the inverted coordinates in order to move the model to the origin.
     glm::mat4 invTranslation = glm::inverse(translation);
-    // Apply the rotation with the model on the origin.
+    // Apply the rotation (around the y axis) with the model on the origin.
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0, 1, 0));
     // Move the model to the origin, rotate it, then move it back.
     // All of this is for the purpose of rotating the model around its center.
