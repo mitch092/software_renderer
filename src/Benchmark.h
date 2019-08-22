@@ -3,23 +3,25 @@
 
 class Stopwatch {
  public:
-  Stopwatch() = default;
+  Stopwatch() : start(), elapsed_seconds(0.0) {}
   ~Stopwatch() = default;
 
-  void reset_and_start() { elapsed = std::chrono::system_clock::now(); }
-  void stop_and_print() {
+  double get_elapsed_seconds() { return elapsed_seconds; }
+
+  void reset_and_start() { start = std::chrono::system_clock::now(); }
+  void stop_and_print_fps() {
     auto end = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - elapsed).count();
-    auto duration2 = static_cast<double>(duration);
-    duration2 /= 1000000000;
+    std::chrono::duration<double> duration = end - start;
+    elapsed_seconds = duration.count();
 
     std::string time;
     time.append("Elapsed time: ");
-    time.append(std::to_string(duration2));
-    time.append(" seconds\n");
+    time.append(std::to_string(1.0 / elapsed_seconds));
+    time.append(" frames per second.\n");
     std::cerr << time;
   }
 
  private:
-  std::chrono::time_point<std::chrono::system_clock> elapsed;
+  std::chrono::time_point<std::chrono::system_clock> start;
+  double elapsed_seconds;
 };
