@@ -65,7 +65,7 @@ class Renderer {
     }
   }
 
-  void draw_triangle_outline(const RenderableTriangle& tri, const Color& color) {
+  void draw_triangle_outline(const Triangle& tri, const Color& color) {
     draw_line(tri.a, tri.b, color);
     draw_line(tri.b, tri.c, color);
     draw_line(tri.c, tri.a, color);
@@ -81,48 +81,51 @@ class Renderer {
   }
 
   void draw_wireframe(Model& model) {
-    for (const auto& tri : model.get_renderable_triangles()) {
+    for (const auto& tri : model.get_triangles()) {
       draw_triangle_outline(tri, Color{255, 255, 255});
     }
   }
 
-  void draw_triangle(const RenderableTriangle& tri, const Color& color) {
+  void draw_flat_rainbow_shaded_model(Model& model) {
+    ZBuffer zbuffer(frame.get_height(), frame.get_width());
+    for (const auto& tri : model.get_triangles()) {
+      draw_triangle(tri, zbuffer, Color{(Uint8)(rand() % 255), (Uint8)(rand() % 255), (Uint8)(rand() % 255)});
+    }
+  }
+
+  void draw_triangle(const Triangle& tri, ZBuffer& zbuffer, const Color& color) {
     auto box = find_bounding_box(tri);
     for (int y = box.ll.y; y <= box.ur.y; ++y) {
       for (int x = box.ll.x; x <= box.ur.x; ++x) {
         auto bc_screen = barycentric(tri, glm::ivec2(x, y));
-        if (bc_screen.x >= 0 && bc_screen.y >= 0 && bc_screen.z >= 0) frame.put_pixel(x, y, color);
+        if (bc_screen.x >= 0 && bc_screen.y >= 0 && bc_screen.z >= 0) {
+          int z = tri.a.z * bc_screen.x + tri.b.z * bc_screen.y + tri.c.z * bc_screen.z;
+          if (zbuffer[x][y] < z) {
+            zbuffer[x][y] = z;
+            frame.put_pixel(x, y, color);
+          }
+        }
       }
-    }
-    // For debugging the bounding_box.
-    // draw_quad_outline(box, Color{255, 0, 0});
-  }
-
-  void draw_flat_rainbow_shaded_model(Model& model) {
-    for (const auto& tri : model.get_renderable_triangles()) {
-      draw_triangle(tri, Color{(Uint8)(rand() % 255), (Uint8)(rand() % 255), (Uint8)(rand() % 255)});
     }
   }
 
   void draw_model_lighted(Model& model) {
+    ZBuffer zbuffer(frame.get_width(), frame.get_height());
     auto light_dir = glm::vec3(0, 0, -1);
-    auto screen_coord_triangles = model.get_renderable_triangles();
-    auto world_coord_triangles = model.get_transformable_triangles();
-    for (int i = 0; i != world_coord_triangles.size(); ++i) {
-      auto tri1 = screen_coord_triangles[i];
-      auto tri2 = world_coord_triangles[i];
-      glm::vec3 n = glm::normalize(glm::cross(tri2.c - tri2.a, tri2.b - tri2.a));
+
+    for (auto tri : model.get_triangles()) {
+      glm::vec3 n = glm::normalize(glm::cross(tri.c - tri.a, tri.b - tri.a));
 
       float intensity = glm::dot(n, light_dir);
       if (intensity > 0) {
         Uint8 shade = static_cast<Uint8>(intensity * 255);
-        draw_triangle(tri1, Color{shade, shade, shade});
+        draw_triangle(tri, zbuffer, Color{shade, shade, shade});
       }
     }
   }
 
  private:
-  Quad find_bounding_box(const RenderableTriangle& tri) {
+  Quad find_bounding_box(const Triangle& tri) {
     // Take care of the edge case in which the triangle is not in the frame at all.
     if (!frame.in_frame(tri.a.x, tri.a.y) && !frame.in_frame(tri.b.x, tri.b.y) && !frame.in_frame(tri.c.x, tri.c.y)) {
       return Quad{glm::ivec2(0, 0), glm::ivec2(-1, -1)};
@@ -143,11 +146,11 @@ class Renderer {
     return Quad{glm::ivec2(left, bottom), glm::ivec2(right, top)};
   }
 
-  glm::vec3 barycentric(const RenderableTriangle& tri, const glm::ivec2& P) {
+  glm::vec3 barycentric(const Triangle& tri, const glm::ivec2& P) {
     glm::vec3 a = glm::vec3(tri.c.x - tri.a.x, tri.b.x - tri.a.x, tri.a.x - P.x);
     glm::vec3 b = glm::vec3(tri.c.y - tri.a.y, tri.b.y - tri.a.y, tri.a.y - P.y);
     glm::vec3 u = glm::cross(a, b);
-    if (std::abs(u.z) < 1) return glm::vec3(-1, 1, 1);
+    if (std::abs(u.z) <= 0) return glm::vec3(-1, 1, 1);
     return glm::vec3(1.0f - (u.x + u.y) / u.z, u.y / u.z, u.x / u.z);
   }
 

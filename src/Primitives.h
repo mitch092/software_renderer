@@ -1,17 +1,20 @@
 #pragma once
+#include <vector>
 #include "glm.hpp"
 
-// T is ivec2 for renderable triangles, vec3 for transformable triangles.
-template <typename T>
 struct Triangle {
-  Triangle(T _a, T _b, T _c) : a(_a), b(_b), c(_c) {}
-  T a;
-  T b;
-  T c;
+  Triangle(glm::vec3 _a, glm::vec3 _b, glm::vec3 _c) : a(_a), b(_b), c(_c) {}
+  glm::vec3 a;
+  glm::vec3 b;
+  glm::vec3 c;
 };
 
-using RenderableTriangle = Triangle<glm::ivec2>;
-using TransformableTriangle = Triangle<glm::vec3>;
+
+class ZBuffer : public std::vector<std::vector<float>> {
+ public:
+  ZBuffer(int width, int height)
+      : std::vector<std::vector<float>>(height, std::vector<float>(width, std::numeric_limits<float>::min())) {}
+};
 
 struct Quad {
   Quad(glm::ivec2 _ll, glm::ivec2 _ur) : ll(_ll), ur(_ur) {}
