@@ -20,6 +20,5 @@ class Model {
   std::vector<int> face(int idx);
 
   void apply_matrix_transform(const glm::mat4& matrix);
-  std::vector<RenderableTriangle> get_renderable_triangles();
-  std::vector<TransformableTriangle> get_transformable_triangles();
+  std::vector<Triangle> get_triangles();
 };

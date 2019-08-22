@@ -59,22 +59,8 @@ void Model::apply_matrix_transform(const glm::mat4& matrix) {
   }
 }
 
-std::vector<RenderableTriangle> Model::get_renderable_triangles() {
-  auto triangles = std::vector<RenderableTriangle>();
-  triangles.reserve(nfaces());
-
-  for (int i = 0; i != nfaces(); ++i) {
-    auto a = glm::ivec2(vert(face(i)[0]));
-    auto b = glm::ivec2(vert(face(i)[1]));
-    auto c = glm::ivec2(vert(face(i)[2]));
-    triangles.emplace_back(a, b, c);
-  }
-
-  return triangles;
-}
-
-std::vector<TransformableTriangle> Model::get_transformable_triangles() {
-  auto triangles = std::vector<TransformableTriangle>();
+std::vector<Triangle> Model::get_triangles() {
+  auto triangles = std::vector<Triangle>();
   triangles.reserve(nfaces());
 
   for (int i = 0; i != nfaces(); ++i) {
