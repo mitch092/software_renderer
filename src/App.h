@@ -34,7 +34,7 @@ class App {
   void display() {
     Stopwatch watch;
     prepare_model();
-    render();
+    //render();
 
     bool quit = false;
     SDL_Event e;
@@ -47,11 +47,11 @@ class App {
         }
       }
       // Rotate 360 degrees every second.
-      //rotate(watch.get_elapsed_seconds(), glm::two_pi<float>());
-      //render();
+      rotate(watch.get_elapsed_seconds(), glm::two_pi<float>());
+      render();
 
       SDL_UpdateWindowSurface(window);
-      //watch.stop_and_print_fps();
+      watch.stop_and_print_fps();
     }
   }
 
