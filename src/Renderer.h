@@ -100,8 +100,8 @@ class Renderer {
         auto bc_screen = barycentric(tri, glm::ivec2(x, y));
         if (bc_screen.x >= 0 && bc_screen.y >= 0 && bc_screen.z >= 0) {
           float z = tri.a.z * bc_screen.x + tri.b.z * bc_screen.y + tri.c.z * bc_screen.z;
-          if (zbuffer[x][y] < z) {
-            zbuffer[x][y] = z;
+          if (zbuffer(x, y) < z) {
+            zbuffer(x, y) = z;
             frame.put_pixel(x, y, color);
           }
         }

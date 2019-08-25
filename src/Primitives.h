@@ -1,4 +1,5 @@
 #pragma once
+#include "buffers.h"
 #include "glm.hpp"
 
 struct Triangle {
@@ -14,4 +15,9 @@ struct Quad {
   glm::ivec2 ll;
   // Upper right.
   glm::ivec2 ur;
+};
+
+class ZBuffer : public RectangularArray<float> {
+ public:
+  ZBuffer(size_t width, size_t height) : RectangularArray<float>(width, height, std::numeric_limits<float>::min()) {}
 };
