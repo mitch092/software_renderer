@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 #include "glm.hpp"
 
 struct Triangle {
@@ -7,13 +6,6 @@ struct Triangle {
   glm::vec3 a;
   glm::vec3 b;
   glm::vec3 c;
-};
-
-
-class ZBuffer : public std::vector<std::vector<float>> {
- public:
-  ZBuffer(int width, int height)
-      : std::vector<std::vector<float>>(height, std::vector<float>(width, std::numeric_limits<float>::min())) {}
 };
 
 struct Quad {
