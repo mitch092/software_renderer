@@ -10,31 +10,48 @@
 #include "Renderer.h"
 #include "SDL.h"
 
+class App;
+using SDL_Success = Either<App, std::string>;
+
 class App {
  public:
-  App(const char* name, int width, int height, const char* _model)
-      : success(false), window(nullptr), screen(nullptr), model(_model), error() {
-    success = SDL_Init(SDL_INIT_VIDEO) >= 0;
-    if (success == false) error.throw_runtime_error("initialize SDL");
+  static SDL_Success Init(const char* name, int width, int height, const char* _model) {
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+      return SDL_Success{std::string("SDL_Init() failed.")};
+    }
 
-    window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
-    if (window == nullptr) error.throw_runtime_error("create the window");
+    SDL_Window* window =
+        SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
+    if (window == nullptr) {
+      SDL_Quit();
+      return SDL_Success{std::string("SDL_CreateWindow() failed.")};
+    }
 
-    screen = SDL_GetWindowSurface(window);
-    if (screen == nullptr) error.throw_runtime_error("create the screen");
+    SDL_Surface* screen = SDL_GetWindowSurface(window);
+    if (screen = nullptr) {
+      SDL_DestroyWindow(window);
+      SDL_Quit();
+      return SDL_Success{std::string("SDL_GetWindowSurface() failed.")};
+    }
+
+    auto model = get_model(_model);
+    if (model.tag == MAYBE::ABSENT) {
+      SDL_DestroyWindow(window);
+      SDL_Quit();
+      return SDL_Success{std::string("Failed to open the OBJ file.")};
+    }
+
+	return SDL_Success{App(window, screen, model.val)};
   }
   ~App() {
-    if (success == true) {
-      if (screen != nullptr) SDL_FreeSurface(screen);
-      if (window != nullptr) SDL_DestroyWindow(window);
-      SDL_Quit();
-    }
+    SDL_DestroyWindow(window);
+    SDL_Quit();
   }
 
   void display() {
     Stopwatch watch;
     prepare_model();
-    //render();
+    // render();
 
     bool quit = false;
     SDL_Event e;
@@ -89,10 +106,10 @@ class App {
     renderer.draw_model_lighted(model);
   }
 
-  bool success;
+  // The real constructor is private... no throws here!
+  App(SDL_Window* _window, SDL_Surface* _screen, Model& _model) : window(_window), screen(_screen), model(_model) {}
+
   SDL_Window* window;
   SDL_Surface* screen;
   Model model;
-
-  Error error;
 };

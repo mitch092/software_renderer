@@ -5,7 +5,7 @@
 
 class Frame {
  public:
-  Frame(SDL_Surface* _surface) : surface(_surface), error() {
+  Frame(SDL_Surface* _surface) : surface(_surface){
     if (SDL_MUSTLOCK(surface)) {
       if (SDL_LockSurface(surface) < 0) {
         error.throw_runtime_error("lock the screen");
@@ -123,6 +123,4 @@ class Frame {
   bool within_bounds(int x, int y) { return (0 <= x && x < get_width()) && (0 <= y && y < get_height()); }
 
   SDL_Surface* surface;
-
-  Error error;
 };

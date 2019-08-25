@@ -1,16 +1,26 @@
 #pragma once
-#include "SDL.h"
-class Error {
- public:
-  void throw_runtime_error(const char* error) { throw std::runtime_error(format_error_string(error)); }
 
- private:
-  std::string format_error_string(const char* error) {
-    std::string error_code("Failed to ");
-    error_code.append(error);
-    error_code.append(". Error: ");
-    error_code.append(SDL_GetError());
-    error_code.append("\n");
-    return error_code;
-  }
+enum struct MAYBE { PRESENT, ABSENT };
+
+enum struct EITHER { SUCCESS, ERROR };
+
+template <typename T>
+struct Maybe {
+  Maybe(T _data) : tag(MAYBE::PRESENT), val(_data) {}
+  Maybe() : tag(MAYBE::ABSENT), val() {}
+  ~Maybe() = default;
+  MAYBE tag;
+  T val;
+};
+
+template <typename T, typename T2>
+struct Either {
+  Either(T _data) : tag(EITHER::SUCCESS), val(_data) {}
+  Either(T2 _data) : tag(EITHER::ERROR), val(_data) {}
+  ~Either() = default;
+  EITHER tag;
+  union {
+    T success;
+    T2 error;
+  } val;
 };
