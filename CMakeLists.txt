@@ -1,8 +1,8 @@
 ﻿cmake_minimum_required (VERSION 3.11)
 project ("software_rasterizer")
 
-# This fixes a weird linker error ("SDL_string.obj : error LNK2019: unresolved external symbol memset referenced in function SDL_vsnprintf_REAL")
-set(LIBC ON CACHE BOOL "Use the system C library" FORCE)
+# In order to fix a weird linker error ("SDL_string.obj : error LNK2019: unresolved external symbol memset referenced in function SDL_vsnprintf_REAL"),
+# put -DLIBC=YES on the commandline.
 
 # Include the git submodule source code files here.
 add_subdirectory(extern/sdl2 
