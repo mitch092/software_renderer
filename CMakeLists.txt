@@ -8,8 +8,7 @@ set(LIBC ON CACHE BOOL "Use the system C library" FORCE)
 add_subdirectory(extern/sdl2 
                  extern/glm)
 
-add_executable(${PROJECT_NAME} src/main.cpp 
-                               src/model.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src/ 
                                            PRIVATE extern/sdl2/include 
@@ -20,6 +19,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE src/
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL2-static SDL2main)
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+#set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+#set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:/Wall>")
