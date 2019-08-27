@@ -1,15 +1,13 @@
 #pragma once
 #include "Color.h"
-#include "Error.h"
 #include "SDL.h"
 
 class Frame {
  public:
-  Frame(SDL_Surface* _surface) : surface(_surface){
+  Frame(SDL_Surface* _surface) : surface(_surface) {
     if (SDL_MUSTLOCK(surface)) {
-      if (SDL_LockSurface(surface) < 0) {
-        error.throw_runtime_error("lock the screen");
-      }
+      int locked = SDL_LockSurface(surface);
+      assert(locked >= 0);
     }
   }
   ~Frame() {
@@ -20,7 +18,9 @@ class Frame {
   }
 
   Color get_pixel(int x, int y) { return get_pixel(surface, x, y); }
-  void put_pixel(int x, int y, const Color& _color) { return put_pixel(surface, x, y, _color); }
+  void put_pixel(int x, int y, const Color& _color) { 
+	  //std::cerr << _color.r << " " << _color.g << " " << _color.b << std::endl;
+	  return put_pixel(surface, x, y, _color); }
 
   int get_height() { return surface->h; }
   int get_width() { return surface->w; }

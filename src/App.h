@@ -1,47 +1,33 @@
 #pragma once
+#include <assert.h>
 #include <chrono>  // For benchmarking the various draw_line versions.
 #include <glm.hpp>
 #include <gtx/transform.hpp>
 #include <stdexcept>
 #include <string>
+#include <variant>
 #include "Benchmark.h"
 #include "Error.h"
 #include "Frame.h"
 #include "Renderer.h"
 #include "SDL.h"
-
-class App;
-using SDL_Success = Either<App, std::string>;
+#include "model.h"
 
 class App {
  public:
-  static SDL_Success Init(const char* name, int width, int height, const char* _model) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-      return SDL_Success{std::string("SDL_Init() failed.")};
-    }
+  App(const char* name, int width, int height, Model& _model) : window(nullptr), screen(nullptr), model(_model) {
+    // Propogating errors (w/o exceptions) is such a drag. Just add assertions and keep them in the release builds :/
+    int init = SDL_Init(SDL_INIT_VIDEO);
+    assert(init >= 0);
 
-    SDL_Window* window =
-        SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
-    if (window == nullptr) {
-      SDL_Quit();
-      return SDL_Success{std::string("SDL_CreateWindow() failed.")};
-    }
+    window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
+    assert(window != nullptr);
 
-    SDL_Surface* screen = SDL_GetWindowSurface(window);
-    if (screen = nullptr) {
-      SDL_DestroyWindow(window);
-      SDL_Quit();
-      return SDL_Success{std::string("SDL_GetWindowSurface() failed.")};
-    }
+    screen = SDL_GetWindowSurface(window);
+    assert(screen != nullptr);
 
-    auto model = get_model(_model);
-    if (model.tag == MAYBE::ABSENT) {
-      SDL_DestroyWindow(window);
-      SDL_Quit();
-      return SDL_Success{std::string("Failed to open the OBJ file.")};
-    }
-
-	return SDL_Success{App(window, screen, model.val)};
+    assert(screen->h > 0);
+    assert(screen->w > 0);
   }
   ~App() {
     SDL_DestroyWindow(window);
@@ -49,6 +35,9 @@ class App {
   }
 
   void display() {
+    assert(screen->w > 0);
+    assert(screen->h > 0);
+
     Stopwatch watch;
     prepare_model();
     // render();
@@ -107,8 +96,7 @@ class App {
   }
 
   // The real constructor is private... no throws here!
-  App(SDL_Window* _window, SDL_Surface* _screen, Model& _model) : window(_window), screen(_screen), model(_model) {}
-
+  App() : window(nullptr), screen(nullptr), model() {}
   SDL_Window* window;
   SDL_Surface* screen;
   Model model;
