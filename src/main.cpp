@@ -1,13 +1,16 @@
 #include <iostream>
+#include <variant>
 #include "App.h"
 
 int main(int argc, char* argv[]) {
-  auto app = App::Init("tinyrenderer in SDL", 800, 800, "african_head.obj");
-  if (app.tag == EITHER::ERROR) {
-    std::cerr << app.val.error << std::endl;
+  Maybe<Model> model = Model::get_model("african_head.obj");
+  if (model.tag == MAYBE::ABSENT) {
+    std::cerr << "Could not load the object file." << std::endl;
     return EXIT_FAILURE;
   }
-  app.val.success.display();
+
+  auto app = App("tinyrenderer in SDL", 800, 800, model.val);
+  app.display();
 
   return EXIT_SUCCESS;
 }
