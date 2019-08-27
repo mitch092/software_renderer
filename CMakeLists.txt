@@ -19,16 +19,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE src/
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL2-static SDL2main)
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-#set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
-#set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:/Wall>")
 target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:/GL /GS->")
 target_link_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:/LTCG>")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+#target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:>")
 target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:/fast>")
-#target_link_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:   >")
 endif()
 
 
