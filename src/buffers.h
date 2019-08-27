@@ -6,7 +6,7 @@ class RectangularArray : public std::vector<T> {
  public:
   RectangularArray(size_t width, size_t height, T preset)
       : std::vector<T>(width * height, preset), _width(width), _height(height) {}
-  T& operator()(size_t x, size_t y) { return this->operator[](x + y * width); }
+  T& operator()(size_t x, size_t y) { return this->operator[](x + y * _width); }
   
  private:
   size_t _width, _height;
