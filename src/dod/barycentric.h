@@ -22,7 +22,7 @@ void barycentric(const std::vector<BarycentricCache>& bcaches, const JaggedArray
   for (int i = 0; i != bcaches.size(); ++i) {
     const auto& cache = bcaches[i];
     const auto& points = pixel_list[i];
-    const auto& bcoords = bcoords_per_box[i];
+    auto& bcoords = bcoords_per_box[i];
     bcoords.clear();
     for (int j = 0; j != points.size(); ++i) {
       glm::vec3 v2 = glm::vec3(points[j], 0) - cache.tria;

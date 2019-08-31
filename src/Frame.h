@@ -29,7 +29,7 @@ class Frame {
 
  private:
   Color get_pixel(SDL_Surface* _surface, int x, int y) {
-    if (!within_bounds(x, y)) {
+    if (!in_frame(x, y)) {
       // std::cerr << "A pixel fell out of bounds: " << x << " " << y << std::endl;
       return Color{0, 0, 0};
     }
@@ -66,7 +66,7 @@ class Frame {
     return Color(red, green, blue);
   }
   void put_pixel(SDL_Surface* _surface, int x, int y, const Color& _color) {
-    if (!within_bounds(x, y)) {
+    if (!in_frame(x, y)) {
       // std::cerr << "A pixel fell out of bounds: " << x << " " << y << std::endl;
       return;
     }
@@ -119,8 +119,6 @@ class Frame {
       }
     }
   }
-
-  bool within_bounds(int x, int y) { return (0 <= x && x < get_width()) && (0 <= y && y < get_height()); }
 
   SDL_Surface* surface;
 };
