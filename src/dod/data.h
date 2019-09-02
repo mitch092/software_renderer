@@ -1,9 +1,14 @@
 #pragma once
-#include <fstream>
-#include <vector>
 #include "Color.h"
+#include "Frame.h"
 #include "Primitives.h"
-#include "SDL.h"
+#include "barycentric.h"
+#include "box.h"
+#include "buffers.h"
+#include "lighting.h"
+#include "model.h"
+#include "transforms.h"
+#include "zbuffer.h"
 
 // Here is something crazy: lesson 3's rendering algorithm completely implemented
 // using data oriented design. Is this right? Is this wrong?
@@ -57,7 +62,7 @@ struct Data {
   std::vector<BarycentricCache> bcaches;
 
   // Bounding box data. Every triangle gets a bounding box.
-  // Don't need to take care of invisible triangles, as the check is done in expand_triangles()
+  // Don't need to take care of invisible triangles, as the check is done during the filtering of visible_triangles.
   std::vector<Quad> boxes;
   // And every bounding box gets a list of pixels.
   // Outer list: triangles. Inner list: pixel coordinates (x, y).
@@ -99,8 +104,26 @@ struct Data {
   // Will use zbuffer_color_id and shades
   RectangularArray<Color> pixels;
 };
+void update(const glm::mat4& matrix, Data& data) {
+  apply_matrix_transform(matrix, data.verts);
+  expand_triangles(data.verts, data.faces, data.all_triangles);
+  update_normals(matrix, data.all_normals);
+  remove_invisible_triangles_and_normals(data.all_triangles, data.all_normals, data.width, data.height,
+                                         data.visible_triangles, data.visible_normals);
+  calculate_light(data.visible_normals, data.shades);
+  data.zbuffer.set_all(std::numeric_limits<float>::min());
+  data.zbuffer_color_id.set_all(data.shades.size() - 1);
+  calculate_bcaches(data.visible_triangles, data.bcaches);
+  calculate_bounding_boxes(data.visible_triangles, data.width, data.height, data.boxes);
+  calculate_pixel_list_per_box(data.boxes, data.pixel_list);
+  barycentric(data.bcaches, data.pixel_list, data.bcoords);
+  bbox_pixel_and_bcoords_to_triangle(data.pixel_list, data.bcoords, data.triangle_bcoords, data.triangle_pixels);
+  calculate_zvalues_per_pixel_per_triangle(data.visible_triangles, data.triangle_bcoords, data.z_values_per_triangle);
+  update_zbuffer(data.triangle_pixels, data.z_values_per_triangle, data.zbuffer, data.zbuffer_color_id);
+  update_pixels(data.shades, data.zbuffer_color_id, data.pixels);
+}
 
-void draw_pixels(const RectangularArray<Color>& pixels, Frame& frame) {
+void draw_pixels(RectangularArray<Color>& pixels, Frame& frame) {
   for (int y = 0; y != pixels.get_height(); ++y) {
     for (int x = 0; x != pixels.get_width(); ++x) {
       frame.put_pixel(x, y, pixels(x, y));
@@ -108,7 +131,7 @@ void draw_pixels(const RectangularArray<Color>& pixels, Frame& frame) {
   }
 }
 
-void init_data(Data& data, std::ifstream& file, int width, int height) {
+void init_data(std::ifstream& file, int width, int height, Data& data) {
   data.width = width;
   data.height = height;
 
@@ -135,23 +158,6 @@ void init_data(Data& data, std::ifstream& file, int width, int height) {
   data.zbuffer = RectangularArray<float>(width, height, std::numeric_limits<float>::min());
   data.zbuffer_color_id = RectangularArray<int>(width, height, 0);
   data.pixels = RectangularArray<Color>(width, height, Color{255, 255, 255});
-}
 
-void update(const glm::mat4& matrix, Data& data) {
-  apply_matrix_transform(matrix, data.verts);
-  expand_triangle(data.verts, data.faces, data.all_triangles);
-  update_normals(matrix, data.all_normals);
-  remove_invisible_triangles_and_normals(data.all_triangles, data.all_normals, data.visible_triangles, data.visible_normals);
-  calculate_light(data.visible_normals, data.shades);
-  data.zbuffer.set_all(std::numeric_limits<float>::min());
-  data.zbuffer_color_id.set_all(data.shades.back());
-  calculate_bcaches(data.visible_triangles, data.bcaches);
-  calculate_bounding_boxes(data.visible_triangles, data.width, data.height, data.boxes);
-  calculate_pixel_list_per_box(data.boxes, data.pixel_list);
-  barycentric(data.bcaches, data.pixel_list, data.bcoords);
-  bbox_pixel_and_bcoords_to_triangle(data.pixel_list, data.bcoords, data.triangle_bcoords, data.triangle_pixels);
-  calculate_zvalues_per_pixel_per_triangle(data.visible_triangles, data.triangle_bcoords, data.z_values_per_triangle);
-  update_zbuffer(data.triangle_pixels, data.z_values_per_triangle, data.zbuffer, data.zbuffer_color_id);
-  update_pixels(data.shades, data.zbuffer_color_id, data.pixels);
+  update(center_and_scale(width, height), data);
 }
-
