@@ -2,7 +2,9 @@
 #include <fstream>
 #include <optional>
 #include <string>
+#include <strstream>
 #include <vector>
+#include "glm.hpp"
 
 // Make sure the file can be opened.
 // Keep this separated from the act of reading the file.
@@ -10,19 +12,31 @@
 std::optional<std::ifstream> get_model_file_descriptor(const char* filename) {
   std::ifstream in(filename, std::ifstream::in);
   if (!in.fail()) {
+    //return std::optional<std::ifstream>(in);
     return {in};
   } else {
     return std::nullopt;
   }
 }
 
+/*std::optional<std::strstream> get_model_file_descriptor(const char* filename) {
+  std::ifstream in(filename, std::ifstream::in);
+  if (!in.fail()) {
+    std::stringstream s;
+    s << in.rdbuf();
+    return {s};
+  } else {
+    return std::nullopt;
+  }
+} */
+
 // Now that we have a valid file handle, write it into buffers just like everything else.
 void get_model(std::ifstream& file, std::vector<glm::vec3>& verts, std::vector<glm::ivec3>& faces) {
   verts.clear();
   faces.clear();
   std::string line;
-  while (!in.eof()) {
-    std::getline(in, line);
+  while (!file.eof()) {
+    std::getline(file, line);
     std::istringstream iss(line.c_str());
     char trash;
     if (!line.compare(0, 2, "v ")) {
@@ -43,14 +57,13 @@ void get_model(std::ifstream& file, std::vector<glm::vec3>& verts, std::vector<g
       faces.emplace_back(f[0], f[1], f[2]);
     }
   }
-  std::cerr << "# v# " << model.verts.size() << " f# " << model.faces.size() << std::endl;
+  std::cerr << "# v# " << verts.size() << " f# " << faces.size() << std::endl;
 }
 
 void apply_matrix_transform(const glm::mat4& matrix, std::vector<glm::vec3>& verts) {
   for (int i = 0; i != verts.size(); ++i) {
     auto vert4 = matrix * glm::vec4(verts[i], 1.0f);
-    auto vert3 = glm::vec3(vert4);
-    verts[i] = vert3;
+    verts[i] = glm::vec3(vert4);
   }
 }
 
@@ -85,7 +98,7 @@ void initialize_normals(const std::vector<Triangle>& triangles, std::vector<glm:
 
 // Called every frame, after initialize_normals figures out the normals for the first time.
 void update_normals(const glm::mat4& matrix, std::vector<glm::vec3>& normals) {
-  const glm::mat3 normalMatrix = glm::inverseTranspose(glm::mat3(matrix));
+  const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(matrix)));
   for (int i = 0; i != normals.size(); ++i) {
     normals[i] = normalMatrix * normals[i];
   }

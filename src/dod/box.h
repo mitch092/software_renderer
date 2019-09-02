@@ -1,12 +1,15 @@
 #pragma once
+#include <algorithm>
+#include "Primitives.h"
+
 
 void calculate_bounding_boxes(const std::vector<Triangle>& triangles, int width, int height, std::vector<Quad>& boxes) {
   boxes.clear();
   for (int i = 0; i != triangles.size(); ++i) {
-    int left = std::min(tri.a.x, std::min(tri.b.x, tri.c.x));
-    int right = std::max(tri.a.x, std::max(tri.b.x, tri.c.x));
-    int bottom = std::min(tri.a.y, std::min(tri.b.y, tri.c.y));
-    int top = std::max(tri.a.y, std::max(tri.b.y, tri.c.y));
+    int left = std::min(triangles[i].a.x, std::min(triangles[i].b.x, triangles[i].c.x));
+    int right = std::max(triangles[i].a.x, std::max(triangles[i].b.x, triangles[i].c.x));
+    int bottom = std::min(triangles[i].a.y, std::min(triangles[i].b.y, triangles[i].c.y));
+    int top = std::max(triangles[i].a.y, std::max(triangles[i].b.y, triangles[i].c.y));
 
     // Now restrict it so that it's only in the frame.
     left = std::max(left, 0);

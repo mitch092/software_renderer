@@ -1,4 +1,8 @@
 #pragma once
+#include <vector>
+#include "Primitives.h"
+#include "buffers.h"
+#include "glm.hpp"
 
 struct BarycentricCache {
   glm::vec3 v0, v1, tria;
