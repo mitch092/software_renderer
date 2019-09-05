@@ -12,7 +12,7 @@
 
 class App {
  public:
-  App(const char* name, int width, int height, std::ifstream& file) : window(nullptr), screen(nullptr), renderer(file, width, height) {
+  App(const char* name, int width, int height, std::string& file) : window(nullptr), screen(nullptr), renderer(file, width, height) {
     // Propogating errors (w/o exceptions) is such a drag. Just add assertions and keep them in the release builds :/
     int init = SDL_Init(SDL_INIT_VIDEO);
     assert(init >= 0);
