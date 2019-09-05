@@ -9,31 +9,36 @@ struct BarycentricCache {
   float invDenom;
 };
 
-void calculate_bcaches(const std::vector<Triangle>& triangles, std::vector<BarycentricCache>& bcaches) {
-  bcaches.clear();
-  for (int i = 0; i != triangles.size(); ++i) {
-    const auto& tri = triangles[i];
-    glm::vec3 v0 = tri.b - tri.a;
-    glm::vec3 v1 = tri.c - tri.a;
+void calculate_bcaches(const std::vector<Triangle>& triangles, const size_t& visible_triangles_size,
+                       std::vector<BarycentricCache>& bcaches) {
+  for (size_t i = 0; i != visible_triangles_size; ++i) {
+    glm::vec3 v0 = triangles[i].b - triangles[i].a;
+    glm::vec3 v1 = triangles[i].c - triangles[i].a;
     float invDenom = 1.0f / (v0.x * v1.y - v1.x * v0.y);
-    bcaches.emplace_back(v0, v1, tri.a, invDenom);
+    bcaches[i] = BarycentricCache{v0, v1, triangles[i].a, invDenom};
   }
 }
 
-void barycentric(const std::vector<BarycentricCache>& bcaches, const JaggedArray<glm::ivec2>& pixel_list,
-                 JaggedArray<glm::vec3>& bcoords_per_box) {
+void barycentric(const std::vector<BarycentricCache>& bcaches, const JaggedArray<glm::uvec2>& pixel_list,
+                 const size_t& visible_triangles_size, JaggedArray<glm::vec3>& bcoords_per_box) {
+  assert(bcaches.size() != 0);
+  assert(pixel_list.size() != 0);
+  assert(bcoords_per_box.size() != 0);
+
   assert(bcaches.size() == pixel_list.size());
-  for (int i = 0; i != bcaches.size(); ++i) {
+  assert(pixel_list.size() == bcoords_per_box.size());
+
+  for (size_t i = 0; i != visible_triangles_size; ++i) {
     const auto& cache = bcaches[i];
-    const auto& points = pixel_list[i];
-    auto& bcoords = bcoords_per_box[i];
-    bcoords.clear();
-    for (int j = 0; j != points.size(); ++i) {
-      glm::vec3 v2 = glm::vec3(points[j], 0) - cache.tria;
+
+    bcoords_per_box[i].clear();
+
+    for (size_t j = 0; j != pixel_list[i].size(); ++j) {
+      glm::vec3 v2 = glm::vec3(pixel_list[i][j], 0) - cache.tria;
       float v = (v2.x * cache.v1.y - cache.v1.x * v2.y) * cache.invDenom;
       float w = (cache.v0.x * v2.y - v2.x * cache.v0.y) * cache.invDenom;
       float u = 1.0f - v - w;
-      bcoords.emplace_back(u, v, w);
+      bcoords_per_box[i].emplace_back(u, v, w);
     }
   }
 }

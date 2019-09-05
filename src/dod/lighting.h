@@ -1,13 +1,19 @@
 #pragma once
+#include <vector>
+#include "Color.h"
+#include "SDL.h"
+#include "glm.hpp"
 
-void calculate_light(const std::vector<glm::vec3>& normals, std::vector<Color>& shades) {
-  shades.clear();
-  for (int i = 0; i != normals.size(); ++i) {
+void calculate_light(const std::vector<glm::vec3>& normals, const size_t& visible_triangles_size,
+                     std::vector<Color>& shades) {
+  for (size_t i = 0; i != visible_triangles_size; ++i) {
     float intensity = glm::dot(normals[i], glm::vec3(0, 0, -1));
     Uint8 shade = static_cast<Uint8>(intensity * 255);
-    shades.emplace_back(shade, shade, shade);
+    shades[i] = Color{shade, shade, shade};
   }
-  // One extra color at the end (black), so that zbuffer_color_id can simply be initialized with shades.size(),
+  // One extra color at the end (black), so that zbuffer_color_id can simply be initialized with shades.size() - 1,
   // So blank pixels are set to black and branching is not needed in order to determine which pixels need to be black.
-  shades.emplace_back(255, 255, 255);
+  // shades.size() - 1 == visible_triangles_size, so I use the simpler constant value.
+  assert(shades.size() - 1 == visible_triangles_size);
+  shades[visible_triangles_size] = Color{255, 255, 255};
 }

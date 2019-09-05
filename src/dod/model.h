@@ -1,37 +1,36 @@
 #pragma once
 #include <fstream>
 #include <optional>
+#include <sstream>
 #include <string>
-#include <strstream>
 #include <vector>
+#include <iostream>
+#include "Primitives.h"
 #include "glm.hpp"
 
 // Make sure the file can be opened.
 // Keep this separated from the act of reading the file.
 // Isolating the parts of the program that can fail seems like a good idea to me.
-std::optional<std::ifstream> get_model_file_descriptor(const char* filename) {
+std::optional<std::string> get_model_file_data(const char* filename) {
   std::ifstream in(filename, std::ifstream::in);
   if (!in.fail()) {
-    //return std::optional<std::ifstream>(in);
-    return {in};
+    in.seekg(0, std::ios::end);
+    size_t size = in.tellg();
+    std::string buffer(size, ' ');
+    in.seekg(0);
+    in.read(&buffer[0], size);
+    return {buffer};
   } else {
     return std::nullopt;
   }
 }
 
-/*std::optional<std::strstream> get_model_file_descriptor(const char* filename) {
-  std::ifstream in(filename, std::ifstream::in);
-  if (!in.fail()) {
-    std::stringstream s;
-    s << in.rdbuf();
-    return {s};
-  } else {
-    return std::nullopt;
-  }
-} */
-
 // Now that we have a valid file handle, write it into buffers just like everything else.
-void get_model(std::ifstream& file, std::vector<glm::vec3>& verts, std::vector<glm::ivec3>& faces) {
+void get_model(std::string& _file, std::vector<glm::vec3>& verts, std::vector<glm::uvec3>& faces) {
+  // I have to move the data in the file around as a std::string and convert it to a stream here,
+  // because std::optional<std::ifstream> does not work for me!
+  std::istringstream file(_file);
+
   verts.clear();
   faces.clear();
   std::string line;
@@ -61,7 +60,7 @@ void get_model(std::ifstream& file, std::vector<glm::vec3>& verts, std::vector<g
 }
 
 void apply_matrix_transform(const glm::mat4& matrix, std::vector<glm::vec3>& verts) {
-  for (int i = 0; i != verts.size(); ++i) {
+  for (size_t i = 0; i != verts.size(); ++i) {
     auto vert4 = matrix * glm::vec4(verts[i], 1.0f);
     verts[i] = glm::vec3(vert4);
   }
@@ -79,41 +78,42 @@ inline bool triangle_in_frame(const Triangle& tri, int width, int height) {
 }
 
 // Called once every frame. Finds every triangle.
-void expand_triangles(const std::vector<glm::vec3>& vertices, const std::vector<glm::ivec3>& faces,
+void expand_triangles(const std::vector<glm::vec3>& vertices, const std::vector<glm::uvec3>& faces,
                       std::vector<Triangle>& triangles) {
-  triangles.clear();
-  for (int i = 0; i != faces.size(); ++i) {
-    triangles.emplace_back(vertices[faces[i].x], vertices[faces[i].y], vertices[faces[i].z]);
+  for (size_t i = 0; i != faces.size(); ++i) {
+    triangles[i] = Triangle{vertices[faces[i].x], vertices[faces[i].y], vertices[faces[i].z]};
   }
 }
 
 // Called once. Finds every normal for every triangle.
 void initialize_normals(const std::vector<Triangle>& triangles, std::vector<glm::vec3>& normals) {
-  normals.clear();
-  for (int i = 0; i != triangles.size(); ++i) {
-    const auto& tri = triangles[i];
-    normals.push_back(glm::normalize(glm::cross(tri.c - tri.a, tri.b - tri.a)));
+  for (size_t i = 0; i != triangles.size(); ++i) {
+    normals[i] = glm::normalize(glm::cross(triangles[i].c - triangles[i].a, triangles[i].b - triangles[i].a));
   }
 }
 
 // Called every frame, after initialize_normals figures out the normals for the first time.
 void update_normals(const glm::mat4& matrix, std::vector<glm::vec3>& normals) {
   const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(matrix)));
-  for (int i = 0; i != normals.size(); ++i) {
+  for (size_t i = 0; i != normals.size(); ++i) {
     normals[i] = normalMatrix * normals[i];
   }
 }
 
 void remove_invisible_triangles_and_normals(const std::vector<Triangle>& all_triangles,
                                             const std::vector<glm::vec3>& all_normals, const int width, const int height,
-                                            std::vector<Triangle>& visible_triangles,
+                                            size_t& visible_triangles_size, std::vector<Triangle>& visible_triangles,
                                             std::vector<glm::vec3>& visible_normals) {
-  visible_triangles.clear();
-  visible_normals.clear();
-  for (int i = 0; i != all_triangles.size(); ++i) {
+  // Keeps track of which index we are overwriting in visible_triangles.
+  visible_triangles_size = 0;
+
+  for (size_t i = 0; i != all_triangles.size(); ++i) {
     if (triangle_in_frame(all_triangles[i], width, height)) {
-      visible_triangles.push_back(all_triangles[i]);
-      visible_normals.push_back(all_normals[i]);
+      visible_triangles[visible_triangles_size] = all_triangles[i];
+      visible_normals[visible_triangles_size] = all_normals[i];
+      ++visible_triangles_size;
     }
   }
+  // When we are done using visible_triangles_size as an arrey indexer, it will contain the
+  // actual size of the visible_triangles array.
 }
