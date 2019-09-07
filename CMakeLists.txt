@@ -23,7 +23,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:/Wall>")
+target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:/W4>")
 target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:/GL /GS->")
 target_link_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:/LTCG>")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
