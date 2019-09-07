@@ -9,10 +9,12 @@
 #include "Frame.h"
 #include "Renderer.h"
 #include "SDL.h"
+#include "transforms.h"
 
 class App {
  public:
-  App(const char* name, int width, int height, std::string& file) : window(nullptr), screen(nullptr), renderer(file, width, height) {
+  App(const char* name, int width, int height, std::string& file)
+      : window(nullptr), screen(nullptr), renderer(file, width, height, center_and_scale(width, height)) {
     // Propogating errors (w/o exceptions) is such a drag. Just add assertions and keep them in the release builds :/
     int init = SDL_Init(SDL_INIT_VIDEO);
     assert(init >= 0);
@@ -37,7 +39,6 @@ class App {
 
     Stopwatch watch;
 
-
     bool quit = false;
     SDL_Event e;
 
@@ -58,7 +59,6 @@ class App {
   }
 
  private:
-
   SDL_Window* window;
   SDL_Surface* screen;
   Renderer renderer;

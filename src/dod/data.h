@@ -141,7 +141,7 @@ void draw_pixels(RectangularArray<Color>& pixels, Frame& frame) {
   }
 }
 
-void init_data(std::string& file, int width, int height, Data& data) {
+void init_data(std::string& file, int width, int height, const glm::mat4& matrix, Data& data) {
   data.width = width;
   data.height = height;
 
@@ -170,5 +170,5 @@ void init_data(std::string& file, int width, int height, Data& data) {
   data.zbuffer_color_id = RectangularArray<int>(width, height, 0);
   data.pixels = RectangularArray<Color>(width, height, Color{255, 255, 255});
 
-  update_data(center_and_scale(width, height), data);
+  update_data(matrix, data);
 }
