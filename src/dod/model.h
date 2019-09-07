@@ -1,17 +1,17 @@
 #pragma once
 #include <fstream>
+#include <iostream>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <iostream>
 #include "Primitives.h"
 #include "glm.hpp"
 
-// Make sure the file can be opened.
-// Keep this separated from the act of reading the file.
-// Isolating the parts of the program that can fail seems like a good idea to me.
-std::optional<std::string> get_model_file_data(const char* filename) {
+    // Make sure the file can be opened.
+    // Keep this separated from the act of reading the file.
+    // Isolating the parts of the program that can fail seems like a good idea to me.
+    std::optional<std::string> get_model_file_data(const char* filename) {
   std::ifstream in(filename, std::ifstream::in);
   if (!in.fail()) {
     in.seekg(0, std::ios::end);
@@ -97,6 +97,10 @@ void update_normals(const glm::mat4& matrix, std::vector<glm::vec3>& normals) {
   const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(matrix)));
   for (size_t i = 0; i != normals.size(); ++i) {
     normals[i] = normalMatrix * normals[i];
+  }
+  // Must normalize every normal, otherwise they will all be extremely close to zero.
+  for (size_t i = 0; i != normals.size(); ++i) {
+    normals[i] = glm::normalize(normals[i]);
   }
 }
 

@@ -35,6 +35,9 @@ void update_pixels(const std::vector<Color>& shades, const RectangularArray<int>
                    RectangularArray<Color>& pixels) {
   for (size_t y = 0; y != zbuffer_color_id.get_height(); ++y) {
     for (size_t x = 0; x != zbuffer_color_id.get_width(); ++x) {
+      //std::cerr << zbuffer_color_id(x, y) << " " << zbuffer_color_id(x, y) << " "
+      //          << zbuffer_color_id(x, y)
+      //          << std::endl;
       pixels(x, y) = shades[zbuffer_color_id(x, y)];
     }
   }
