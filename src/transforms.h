@@ -25,6 +25,9 @@ glm::mat4 rotate(float delta_time, float radians) {
   glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0, 1, 0));
   // Move the model to the origin, rotate it, then move it back.
   // All of this is for the purpose of rotating the model around its center.
-  return (translation * rotation * invTranslation);
+  glm::mat4 rotation_around_point = translation * rotation * invTranslation;
+
+
+  return rotation_around_point;
 }
 
