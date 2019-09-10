@@ -120,10 +120,15 @@ void update_data(const glm::mat4& matrix, Data& data) {
   data.zbuffer.set_all(std::numeric_limits<float>::min());
   // Set all of them to be the dummy triangle color (black).
   data.zbuffer_color_id.set_all(data.shades.size() - 1);
+
   calculate_bcaches(data.visible_triangles, data.visible_triangles_size, data.bcaches);
+
   calculate_bounding_boxes(data.visible_triangles, data.width, data.height, data.visible_triangles_size, data.boxes);
   calculate_pixel_list_per_box(data.boxes, data.visible_triangles_size, data.pixel_list);
+
   barycentric(data.bcaches, data.pixel_list, data.visible_triangles_size, data.bcoords);
+  //barycentric_alternative(data.visible_triangles, data.pixel_list, data.visible_triangles_size, data.bcoords);
+
   bbox_pixel_and_bcoords_to_triangle(data.pixel_list, data.bcoords, data.visible_triangles_size, data.triangle_bcoords,
                                      data.triangle_pixels);
   calculate_zvalues_per_pixel_per_triangle(data.visible_triangles, data.triangle_bcoords, data.visible_triangles_size,
@@ -131,6 +136,11 @@ void update_data(const glm::mat4& matrix, Data& data) {
   update_zbuffer(data.triangle_pixels, data.z_values_per_triangle, data.visible_triangles_size, data.zbuffer,
                  data.zbuffer_color_id);
   update_pixels(data.shades, data.zbuffer_color_id, data.pixels);
+
+  // This should not be a black pixel, but it is.
+  //auto test = data.pixels(400, 1);
+  // auto test = data.zbuffer_color_id(400, 1);
+  //auto test2 = data.pixels(400, 11);
 }
 
 void draw_pixels(RectangularArray<Color>& pixels, Frame& frame) {
@@ -168,7 +178,7 @@ void init_data(std::string& file, int width, int height, const glm::mat4& matrix
 
   data.zbuffer = RectangularArray<float>(width, height, std::numeric_limits<float>::min());
   data.zbuffer_color_id = RectangularArray<int>(width, height, 0);
-  data.pixels = RectangularArray<Color>(width, height, Color{255, 255, 255});
+  data.pixels = RectangularArray<Color>(width, height, Color{0, 0, 0});
 
   update_data(matrix, data);
 }

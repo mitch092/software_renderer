@@ -39,6 +39,28 @@ void barycentric(const std::vector<BarycentricCache>& bcaches, const JaggedArray
       float w = (cache.v0.x * v2.y - v2.x * cache.v0.y) * cache.invDenom;
       float u = 1.0f - v - w;
       bcoords_per_box[i].emplace_back(u, v, w);
+
+      if (i == 1189 && j == 48) {
+        std::cout << pixel_list[i][j].x << " " << pixel_list[i][j].y << std::endl;
+        std::cout << u << " " << v << " " << w << std::endl;
+      }
+    }
+  }
+}
+
+void barycentric_alternative(const std::vector<Triangle>& triangles, const JaggedArray<glm::uvec2>& pixel_list,
+                             const size_t& visible_triangles_size, JaggedArray<glm::vec3>& bcoords_per_box) {
+  for (size_t i = 0; i != visible_triangles_size; ++i) {
+    auto& tri = triangles[i];
+    bcoords_per_box[i].clear();
+    for (size_t j = 0; j != pixel_list[i].size(); ++j) {
+
+      glm::vec3 vec = glm::cross(glm::vec3(tri.c.x - tri.a.x, tri.b.x - tri.a.x, tri.a.x - (float)pixel_list[i][j].x), 
+		                        glm::vec3(tri.c.y - tri.a.y, tri.b.y - tri.a.y, tri.a.y - (float)pixel_list[i][j].y));
+      float u = 1.0f - (vec.x + vec.y) / vec.z;
+      float v = vec.y / vec.z;
+      float w = vec.x / vec.z;
+      bcoords_per_box[i].emplace_back(u, v, w);
     }
   }
 }

@@ -8,10 +8,10 @@
 #include "Primitives.h"
 #include "glm.hpp"
 
-    // Make sure the file can be opened.
-    // Keep this separated from the act of reading the file.
-    // Isolating the parts of the program that can fail seems like a good idea to me.
-    std::optional<std::string> get_model_file_data(const char* filename) {
+// Make sure the file can be opened.
+// Keep this separated from the act of reading the file.
+// Isolating the parts of the program that can fail seems like a good idea to me.
+std::optional<std::string> get_model_file_data(const char* filename) {
   std::ifstream in(filename, std::ifstream::in);
   if (!in.fail()) {
     in.seekg(0, std::ios::end);
@@ -36,7 +36,7 @@ void get_model(std::string& _file, std::vector<glm::vec3>& verts, std::vector<gl
   std::string line;
   while (!file.eof()) {
     std::getline(file, line);
-    std::istringstream iss(line.c_str());
+    std::istringstream iss(line);
     char trash;
     if (!line.compare(0, 2, "v ")) {
       iss >> trash;
@@ -46,7 +46,7 @@ void get_model(std::string& _file, std::vector<glm::vec3>& verts, std::vector<gl
       iss >> v.z;
       verts.push_back(v);
     } else if (!line.compare(0, 2, "f ")) {
-      std::vector<int> f;
+      std::vector<unsigned int> f;
       int itrash, idx;
       iss >> trash;
       while (iss >> idx >> trash >> itrash >> trash >> itrash) {
@@ -82,13 +82,23 @@ void expand_triangles(const std::vector<glm::vec3>& vertices, const std::vector<
                       std::vector<Triangle>& triangles) {
   for (size_t i = 0; i != faces.size(); ++i) {
     triangles[i] = Triangle{vertices[faces[i].x], vertices[faces[i].y], vertices[faces[i].z]};
+    // if (i == 1189) {
+    // std::cerr << triangles[i].c.y << std::endl;
+    // std::cerr << faces[i].z << std::endl;
+    // std::cerr << faces[i].z << std::endl;
+    // std::cerr << vertices[faces[i].z].y << std::endl;
+    // std::cerr << vertices[1].y << std::endl;
+    //}
   }
 }
 
 // Called once. Finds every normal for every triangle.
 void initialize_normals(const std::vector<Triangle>& triangles, std::vector<glm::vec3>& normals) {
   for (size_t i = 0; i != triangles.size(); ++i) {
-    normals[i] = glm::normalize(glm::cross(triangles[i].c - triangles[i].a, triangles[i].b - triangles[i].a));
+    normals[i] = glm::cross(triangles[i].c - triangles[i].a, triangles[i].b - triangles[i].a);
+  }
+  for (size_t i = 0; i != triangles.size(); ++i) {
+    normals[i] = glm::normalize(normals[i]);
   }
 }
 
@@ -113,6 +123,8 @@ void remove_invisible_triangles_and_normals(const std::vector<Triangle>& all_tri
 
   for (size_t i = 0; i != all_triangles.size(); ++i) {
     if (triangle_in_frame(all_triangles[i], width, height)) {
+      // std::cerr << i << " " << visible_triangles_size << std::endl;
+
       visible_triangles[visible_triangles_size] = all_triangles[i];
       visible_normals[visible_triangles_size] = all_normals[i];
       ++visible_triangles_size;

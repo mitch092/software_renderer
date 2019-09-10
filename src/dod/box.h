@@ -34,12 +34,16 @@ void calculate_pixel_list_per_box(const std::vector<Quad>& boxes, const size_t& 
   }
 }
 
+// problem with one of the uvec2 arrays
 void bbox_pixel_and_bcoords_to_triangle(const JaggedArray<glm::uvec2>& pixels_per_box,
                                         const JaggedArray<glm::vec3>& bcoords_per_box, const size_t& visible_triangles_size,
                                         JaggedArray<glm::vec3>& bcoords_per_triangle,
                                         JaggedArray<glm::uvec2>& pixels_per_triangle) {
   // For each box containing bcoords and pixels:
   for (size_t i = 0; i != visible_triangles_size; ++i) {
+    assert(pixels_per_box[i].size() == bcoords_per_box[i].size());
+    assert(bcoords_per_triangle[i].size() == pixels_per_triangle[i].size());
+
     // Get a list of bcoords/pixels from a single box and clear it.
     bcoords_per_triangle[i].clear();
     pixels_per_triangle[i].clear();

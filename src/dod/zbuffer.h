@@ -23,9 +23,15 @@ void update_zbuffer(const JaggedArray<glm::uvec2>& triangle_pixels, const Jagged
                     RectangularArray<int>& zbuffer_color_id) {
   for (size_t i = 0; i != visible_triangles_size; ++i) {
     for (size_t j = 0; j != triangle_pixels[i].size(); ++j) {
+      // This is never true, which means that none of the triangles has the first missing pixel.
+      // if (triangle_pixels[i][j].x == 400 && triangle_pixels[i][j].y == 1) {
+      //  std::cout << "YES" << std::endl;
+      //}
       if (zbuffer(triangle_pixels[i][j].x, triangle_pixels[i][j].y) < z_values_per_triangle[i][j]) {
         zbuffer(triangle_pixels[i][j].x, triangle_pixels[i][j].y) = z_values_per_triangle[i][j];
         zbuffer_color_id(triangle_pixels[i][j].x, triangle_pixels[i][j].y) = i;
+
+        // std::cout << triangle_pixels[i][j].x << " " << triangle_pixels[i][j].y << std::endl;
       }
     }
   }
@@ -35,9 +41,6 @@ void update_pixels(const std::vector<Color>& shades, const RectangularArray<int>
                    RectangularArray<Color>& pixels) {
   for (size_t y = 0; y != zbuffer_color_id.get_height(); ++y) {
     for (size_t x = 0; x != zbuffer_color_id.get_width(); ++x) {
-      //std::cerr << zbuffer_color_id(x, y) << " " << zbuffer_color_id(x, y) << " "
-      //          << zbuffer_color_id(x, y)
-      //          << std::endl;
       pixels(x, y) = shades[zbuffer_color_id(x, y)];
     }
   }
