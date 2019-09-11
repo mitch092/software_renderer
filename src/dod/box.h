@@ -26,15 +26,15 @@ void calculate_pixel_list_per_box(const std::vector<Quad>& boxes, const size_t& 
                                   JaggedArray<glm::uvec2>& pixel_list) {
   for (size_t i = 0; i != visible_triangles_size; ++i) {
     pixel_list[i].clear();
-    for (size_t y = boxes[i].ll.y; y != boxes[i].ur.y; ++y) {
-      for (size_t x = boxes[i].ll.x; x != boxes[i].ur.x; ++x) {
+    // Holy s***... putting +1 near these for loop conditions fixed all my problems!
+    for (size_t y = boxes[i].ll.y; y != boxes[i].ur.y + 1; ++y) {
+      for (size_t x = boxes[i].ll.x; x != boxes[i].ur.x + 1; ++x) {
         pixel_list[i].emplace_back(x, y);
       }
     }
   }
 }
 
-// problem with one of the uvec2 arrays
 void bbox_pixel_and_bcoords_to_triangle(const JaggedArray<glm::uvec2>& pixels_per_box,
                                         const JaggedArray<glm::vec3>& bcoords_per_box, const size_t& visible_triangles_size,
                                         JaggedArray<glm::vec3>& bcoords_per_triangle,
