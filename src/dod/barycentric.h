@@ -39,11 +39,6 @@ void barycentric(const std::vector<BarycentricCache>& bcaches, const JaggedArray
       float w = (cache.v0.x * v2.y - v2.x * cache.v0.y) * cache.invDenom;
       float u = 1.0f - v - w;
       bcoords_per_box[i].emplace_back(u, v, w);
-
-      if (i == 1189 && j == 48) {
-        std::cout << pixel_list[i][j].x << " " << pixel_list[i][j].y << std::endl;
-        std::cout << u << " " << v << " " << w << std::endl;
-      }
     }
   }
 }

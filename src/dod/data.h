@@ -137,10 +137,6 @@ void update_data(const glm::mat4& matrix, Data& data) {
                  data.zbuffer_color_id);
   update_pixels(data.shades, data.zbuffer_color_id, data.pixels);
 
-  // This should not be a black pixel, but it is.
-  //auto test = data.pixels(400, 1);
-  // auto test = data.zbuffer_color_id(400, 1);
-  //auto test2 = data.pixels(400, 11);
 }
 
 void draw_pixels(RectangularArray<Color>& pixels, Frame& frame) {

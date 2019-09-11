@@ -81,14 +81,7 @@ inline bool triangle_in_frame(const Triangle& tri, int width, int height) {
 void expand_triangles(const std::vector<glm::vec3>& vertices, const std::vector<glm::uvec3>& faces,
                       std::vector<Triangle>& triangles) {
   for (size_t i = 0; i != faces.size(); ++i) {
-    triangles[i] = Triangle{vertices[faces[i].x], vertices[faces[i].y], vertices[faces[i].z]};
-    // if (i == 1189) {
-    // std::cerr << triangles[i].c.y << std::endl;
-    // std::cerr << faces[i].z << std::endl;
-    // std::cerr << faces[i].z << std::endl;
-    // std::cerr << vertices[faces[i].z].y << std::endl;
-    // std::cerr << vertices[1].y << std::endl;
-    //}
+    triangles[i] = Triangle{vertices[faces[i].x], vertices[faces[i].y], vertices[faces[i].z]};    
   }
 }
 
@@ -123,8 +116,6 @@ void remove_invisible_triangles_and_normals(const std::vector<Triangle>& all_tri
 
   for (size_t i = 0; i != all_triangles.size(); ++i) {
     if (triangle_in_frame(all_triangles[i], width, height)) {
-      // std::cerr << i << " " << visible_triangles_size << std::endl;
-
       visible_triangles[visible_triangles_size] = all_triangles[i];
       visible_normals[visible_triangles_size] = all_normals[i];
       ++visible_triangles_size;
