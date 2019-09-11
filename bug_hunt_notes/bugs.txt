@@ -1,0 +1,10 @@
+1. The background was white.
+Fix: The one extra color at the end of calculate_light() in
+lighting.h should've been black, not white.
+
+2. The triangles where not being shaded.
+Fix: forgot to add glm::normalize inside of update_normals().
+
+3. Many pixels were missing!
+Fix: Added + 1 to the conditions in the inner two for loops
+of calculate_pixel_list_per_box() inside of the box.h header file.

@@ -1,0 +1,49 @@
+pixel #: 1200
+width: 800
+
+x = 1200 % 800 = 400
+y = 1200 / 800 = 1
+
+The barycentric coordinate index for pixel (400, 1):
+data.bcoords[1189][48]
+
+The triangle containing this broken(?) bcoord:
+a=446.952789, 10.5420227, 522.706421 
+b=399.954407, 23.9016113, 493.704803 
+c=400.113403, 0.000000000, 514.737183
+
+pixel #: 34800
+width: 800
+
+x = 34800 % 800 = 400
+y = 34800 / 800 = 43
+
+triangles 1146 and 1147 and 1189
+
+
+
+triangle 1189
+pixel 400,1
+bcoords: -0.00227582 0.0428419 0.959434
+
+
+
+
+
+
+
+bcoords of the correct pixel:
+0.00227362 0.956894 0.0408323
+
+The correct triangle containing the working 400,1 pixel:
+353.089 10.5744 522.763
+400.113 0 514.737
+399.954 23.9016 493.705
+
+The correct triangle that contains the 400,1 pixel is 2396
+
+In bcoords per box, for pixel 400,1 in box 2396, there is a bcoord with index 63
+
+Apparently, box 2396 did not have pixel 400,1 in it.
+Fixing the off by one error finally fixed the issue.
+
