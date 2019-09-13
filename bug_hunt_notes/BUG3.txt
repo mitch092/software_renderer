@@ -45,5 +45,5 @@ The correct triangle that contains the 400,1 pixel is 2396
 In bcoords per box, for pixel 400,1 in box 2396, there is a bcoord with index 63
 
 Apparently, box 2396 did not have pixel 400,1 in it.
-Fixing the off by one error finally fixed the issue.
+Fixing the off by one error in the pixels to bounding box function finally fixed the issue.
 
