@@ -33,6 +33,6 @@ cmake -DCMAKE_C_COMPILER=icl -DCMAKE_CXX_COMPILER=icl -DCMAKE_BUILD_TYPE=Release
 cmake -A "x64" -DCMAKE_BUILD_TYPE=Debug -DLIBC=YES ../../
 cmake.exe --build . --config Debug
 # Release w/ intel compiler:
-cmake -DCMAKE_C_COMPILER=icl -DCMAKE_CXX_COMPILER=icl -DCMAKE_BUILD_TYPE=Release -DLIBC=YES -G "NMake Makefiles" ../../
+cmake -DCMAKE_C_COMPILER=icl -DCMAKE_CXX_COMPILER=icl -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLIBC=YES -G "NMake Makefiles" ../../
 cmake.exe --build .
 
