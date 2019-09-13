@@ -4,6 +4,8 @@
 #include "buffers.h"
 #include "glm.hpp"
 
+// I need to optimize everything in this file more!
+
 struct BarycentricCache {
   glm::vec3 v0, v1, tria;
   float invDenom;
@@ -34,7 +36,9 @@ void barycentric(const std::vector<BarycentricCache>& bcaches, const JaggedArray
     bcoords_per_box[i].clear();
 
     for (size_t j = 0; j != pixel_list[i].size(); ++j) {
-      glm::vec3 v2 = glm::vec3(pixel_list[i][j], 0) - cache.tria;
+      //glm::vec3 v2 = glm::vec3(pixel_list[i][j], 0) - cache.tria;
+      glm::vec2 v2 = glm::vec2(pixel_list[i][j]) - glm::vec2(cache.tria);
+
       float v = (v2.x * cache.v1.y - cache.v1.x * v2.y) * cache.invDenom;
       float w = (cache.v0.x * v2.y - v2.x * cache.v0.y) * cache.invDenom;
       float u = 1.0f - v - w;
