@@ -70,6 +70,29 @@ struct Data {
   // Bounding box data. Every triangle gets a bounding box.
   // Don't need to take care of invisible triangles, as the check is done during the filtering of visible_triangles.
   std::vector<Quad> boxes;
+
+  // Change all JaggedArrays to std::vector. That means that 
+  // I can make all of the vectors 1920*1080 in size, but
+  // I'll need to make a sub-pipline that updates all of the data from pixel_list
+  // to zbuffer_color_id and repeats FOR EVERY TRIANGLE. Right now,
+  // I update all of the barycentric coords for every triangle before filtering 
+  // and getting the z-values. So I can no longer reuse the icache for the bcoord
+  // calculation between triangles. But reusing it for the coords in a triangle
+  // is good enough, and I want to get rid of these big, inefficient JaggedArrays.
+
+  // If we have 2000 triangles and a screen of size 1920x1080,
+  // then the highest potential size of a single JaggedArray (bcoords for example)
+  // would be:
+  // 2000 * 1920 * 1080 * 3 floats * 4 bytes per float = 49 gigabytes.
+  // But if I flatten the arrays at the cost of a few extra cache misses,
+  // then a single buffer (again, lets say the bcoords buffer)
+  // would only be size:
+  // 1 * 1920 * 1080 * 3 floats * 4 bytes per float = 25 megabytes.
+  // And if I have less than 10 of these buffers, then my program will probably use less than
+  // 25 megabytes * 10 = 250 megabytes
+  // which is completely reasonable.
+
+
   // And every bounding box gets a list of pixels.
   // Outer list: triangles. Inner list: pixel coordinates (x, y).
   // ***ALL PIXELS IN BOX FOR EVERY BOX
