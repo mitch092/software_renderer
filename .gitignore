@@ -6,3 +6,4 @@ CMakeSettings.json
 build/
 builds/
 out/
+profiler/
