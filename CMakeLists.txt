@@ -17,17 +17,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sdl2 glm)
 
 
-
 add_executable(${PROJECT_NAME} src/main.cpp)
-
-
-
-
-#target_include_directories(${PROJECT_NAME} PRIVATE src/ 
-#                                           PRIVATE "${SDL2_INCLUDE_DIR}" 
-#	                                       PRIVATE "${GLM_INCLUDE_DIR}")
-
-
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL2-static SDL2main glm)
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
