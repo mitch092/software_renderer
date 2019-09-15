@@ -1,6 +1,6 @@
 #pragma once
+#include <SDL.h>
 #include "Color.h"
-#include "SDL.h"
 
 class Frame {
  public:
@@ -18,9 +18,10 @@ class Frame {
   }
 
   Color get_pixel(int x, int y) { return get_pixel(surface, x, y); }
-  void put_pixel(int x, int y, const Color& _color) { 
-	  //std::cerr << _color.r << " " << _color.g << " " << _color.b << std::endl;
-	  return put_pixel(surface, x, y, _color); }
+  void put_pixel(int x, int y, const Color& _color) {
+    // std::cerr << _color.r << " " << _color.g << " " << _color.b << std::endl;
+    return put_pixel(surface, x, y, _color);
+  }
 
   int get_height() { return surface->h; }
   int get_width() { return surface->w; }

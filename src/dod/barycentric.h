@@ -1,8 +1,8 @@
 #pragma once
+#include <glm/glm.hpp>
 #include <vector>
 #include "Primitives.h"
 #include "buffers.h"
-#include "glm.hpp"
 
 // I need to optimize everything in this file more!
 
@@ -36,7 +36,7 @@ void barycentric(const std::vector<BarycentricCache>& bcaches, const JaggedArray
     bcoords_per_box[i].clear();
 
     for (size_t j = 0; j != pixel_list[i].size(); ++j) {
-      //glm::vec3 v2 = glm::vec3(pixel_list[i][j], 0) - cache.tria;
+      // glm::vec3 v2 = glm::vec3(pixel_list[i][j], 0) - cache.tria;
       glm::vec2 v2 = glm::vec2(pixel_list[i][j]) - glm::vec2(cache.tria);
 
       float v = (v2.x * cache.v1.y - cache.v1.x * v2.y) * cache.invDenom;
@@ -53,9 +53,8 @@ void barycentric_alternative(const std::vector<Triangle>& triangles, const Jagge
     auto& tri = triangles[i];
     bcoords_per_box[i].clear();
     for (size_t j = 0; j != pixel_list[i].size(); ++j) {
-
-      glm::vec3 vec = glm::cross(glm::vec3(tri.c.x - tri.a.x, tri.b.x - tri.a.x, tri.a.x - (float)pixel_list[i][j].x), 
-		                        glm::vec3(tri.c.y - tri.a.y, tri.b.y - tri.a.y, tri.a.y - (float)pixel_list[i][j].y));
+      glm::vec3 vec = glm::cross(glm::vec3(tri.c.x - tri.a.x, tri.b.x - tri.a.x, tri.a.x - (float)pixel_list[i][j].x),
+                                 glm::vec3(tri.c.y - tri.a.y, tri.b.y - tri.a.y, tri.a.y - (float)pixel_list[i][j].y));
       float u = 1.0f - (vec.x + vec.y) / vec.z;
       float v = vec.y / vec.z;
       float w = vec.x / vec.z;

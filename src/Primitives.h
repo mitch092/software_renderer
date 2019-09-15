@@ -1,5 +1,5 @@
 #pragma once
-#include "glm.hpp"
+#include <glm/glm.hpp>
 
 struct Triangle {
   Triangle(glm::vec3 _a, glm::vec3 _b, glm::vec3 _c) : a(_a), b(_b), c(_c) {}

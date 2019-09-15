@@ -71,11 +71,11 @@ struct Data {
   // Don't need to take care of invisible triangles, as the check is done during the filtering of visible_triangles.
   std::vector<Quad> boxes;
 
-  // Change all JaggedArrays to std::vector. That means that 
+  // Change all JaggedArrays to std::vector. That means that
   // I can make all of the vectors 1920*1080 in size, but
   // I'll need to make a sub-pipline that updates all of the data from pixel_list
   // to zbuffer_color_id and repeats FOR EVERY TRIANGLE. Right now,
-  // I update all of the barycentric coords for every triangle before filtering 
+  // I update all of the barycentric coords for every triangle before filtering
   // and getting the z-values. So I can no longer reuse the icache for the bcoord
   // calculation between triangles. But reusing it for the coords in a triangle
   // is good enough, and I want to get rid of these big, inefficient JaggedArrays.
@@ -91,7 +91,6 @@ struct Data {
   // And if I have less than 10 of these buffers, then my program will probably use less than
   // 25 megabytes * 10 = 250 megabytes
   // which is completely reasonable.
-
 
   // And every bounding box gets a list of pixels.
   // Outer list: triangles. Inner list: pixel coordinates (x, y).
@@ -150,7 +149,7 @@ void update_data(const glm::mat4& matrix, Data& data) {
   calculate_pixel_list_per_box(data.boxes, data.visible_triangles_size, data.pixel_list);
 
   barycentric(data.bcaches, data.pixel_list, data.visible_triangles_size, data.bcoords);
-  //barycentric_alternative(data.visible_triangles, data.pixel_list, data.visible_triangles_size, data.bcoords);
+  // barycentric_alternative(data.visible_triangles, data.pixel_list, data.visible_triangles_size, data.bcoords);
 
   bbox_pixel_and_bcoords_to_triangle(data.pixel_list, data.bcoords, data.visible_triangles_size, data.triangle_bcoords,
                                      data.triangle_pixels);
@@ -159,7 +158,6 @@ void update_data(const glm::mat4& matrix, Data& data) {
   update_zbuffer(data.triangle_pixels, data.z_values_per_triangle, data.visible_triangles_size, data.zbuffer,
                  data.zbuffer_color_id);
   update_pixels(data.shades, data.zbuffer_color_id, data.pixels);
-
 }
 
 void draw_pixels(RectangularArray<Color>& pixels, Frame& frame) {

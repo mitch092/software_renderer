@@ -1,12 +1,12 @@
 #pragma once
 #include <fstream>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
 #include "Primitives.h"
-#include "glm.hpp"
 
 // Make sure the file can be opened.
 // Keep this separated from the act of reading the file.
@@ -81,7 +81,7 @@ inline bool triangle_in_frame(const Triangle& tri, int width, int height) {
 void expand_triangles(const std::vector<glm::vec3>& vertices, const std::vector<glm::uvec3>& faces,
                       std::vector<Triangle>& triangles) {
   for (size_t i = 0; i != faces.size(); ++i) {
-    triangles[i] = Triangle{vertices[faces[i].x], vertices[faces[i].y], vertices[faces[i].z]};    
+    triangles[i] = Triangle{vertices[faces[i].x], vertices[faces[i].y], vertices[faces[i].z]};
   }
 }
 

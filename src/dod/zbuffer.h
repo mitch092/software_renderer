@@ -1,8 +1,8 @@
 #pragma once
+#include <glm/glm.hpp>
 #include <vector>
 #include "Primitives.h"
 #include "buffers.h"
-#include "glm.hpp"
 
 void calculate_zvalues_per_pixel_per_triangle(const std::vector<Triangle>& triangles,
                                               const JaggedArray<glm::vec3>& triangle_bcoords,
@@ -22,7 +22,7 @@ void update_zbuffer(const JaggedArray<glm::uvec2>& triangle_pixels, const Jagged
                     const size_t& visible_triangles_size, RectangularArray<float>& zbuffer,
                     RectangularArray<int>& zbuffer_color_id) {
   for (size_t i = 0; i != visible_triangles_size; ++i) {
-    for (size_t j = 0; j != triangle_pixels[i].size(); ++j) {      
+    for (size_t j = 0; j != triangle_pixels[i].size(); ++j) {
       if (zbuffer(triangle_pixels[i][j].x, triangle_pixels[i][j].y) < z_values_per_triangle[i][j]) {
         zbuffer(triangle_pixels[i][j].x, triangle_pixels[i][j].y) = z_values_per_triangle[i][j];
         zbuffer_color_id(triangle_pixels[i][j].x, triangle_pixels[i][j].y) = i;

@@ -1,5 +1,5 @@
 #pragma once
-#include "glm.hpp"
+#include <glm/glm.hpp>
 
 // The model is in units -1 to 1.
 // Add 1 to every component, divide every component by 2, then multiply the x and y
@@ -27,7 +27,5 @@ glm::mat4 rotate(float delta_time, float radians) {
   // All of this is for the purpose of rotating the model around its center.
   glm::mat4 rotation_around_point = translation * rotation * invTranslation;
 
-
   return rotation_around_point;
 }
-

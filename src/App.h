@@ -1,14 +1,14 @@
 #pragma once
+#include <SDL.h>
 #include <assert.h>
 #include <chrono>  // For benchmarking the various draw_line versions.
-#include <glm.hpp>
-#include <gtx/transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <stdexcept>
 #include <string>
 #include "Benchmark.h"
 #include "Frame.h"
 #include "Renderer.h"
-#include "SDL.h"
 #include "transforms.h"
 
 class App {
