@@ -28,8 +28,11 @@ struct Data {
   // Get this from frame.h
   int width, height;
 
+  // temporary buffers for calculations.
+  std::vector<float> temp1, temp2, temp3, temp4, temp5;
+
   // Get this from model.h
-  // Transform matrices are applied here.
+  // Transform matrices are applied to verts.
   std::vector<glm::vec3> verts;
   std::vector<glm::uvec3> faces;
 
@@ -65,7 +68,7 @@ struct Data {
 
   // Calculate whatever I can for barycentric coords using only the Triangles and store it here.
   // Resize this to be the same size as triangles.
-  std::vector<BarycentricCache> bcaches;
+  BarycentricCaches bcaches;
 
   // Bounding box data. Every triangle gets a bounding box.
   // Don't need to take care of invisible triangles, as the check is done during the filtering of visible_triangles.
@@ -92,23 +95,29 @@ struct Data {
   // 25 megabytes * 10 = 250 megabytes
   // which is completely reasonable.
 
+  size_t number_of_pixels_for_this_box;
   // And every bounding box gets a list of pixels.
   // Outer list: triangles. Inner list: pixel coordinates (x, y).
   // ***ALL PIXELS IN BOX FOR EVERY BOX
-  JaggedArray<glm::uvec2> pixel_list;
+  // ***
+  std::vector<glm::uvec2> pixel_list;
 
   // Each pixel in each bounding box gets mapped to a barycentric coordinate.
   // Outer list: triangles. Inner list: barycentric coordinates.
   // ***ALL BCOORDS IN BOX
-  JaggedArray<glm::vec3> bcoords;
+  // ***
+  std::vector<glm::vec3> bcoords;
 
+  size_t number_of_pixels_for_this_triangle;
   // Now create a list containing only the bcoords inside the triangle.
   // &&&ALL BCOORDS IN TRIANGLE
-  JaggedArray<glm::vec3> triangle_bcoords;
+  // ***
+  std::vector<glm::vec3> triangle_bcoords;
 
   // Now create a list containing only the pixels inside the triangle.
   // &&&ALL PIXEL X, Y COORDS IN TRIANGLE
-  JaggedArray<glm::uvec2> triangle_pixels;
+  // ***
+  std::vector<glm::uvec2> triangle_pixels;
 
   // Now calculate the z coordinates for every pixel inside of every triangle.
   // Every pixel on the screen stores a z index.
@@ -117,7 +126,8 @@ struct Data {
   // if the Z is greater than std::numeric_limits<float>::min(),
   // then take that glm::ivec2 and the color and update the pixel list.
   // &&&ALL PIXEL Z COORDS IN TRIANGLE
-  JaggedArray<float> z_values_per_triangle;
+  // ***
+  std::vector<float> z_values_per_triangle;
 
   // &&&ALL Z COORDS IN THE SCREEN ZBUFFER
   // Same size as the screen.
@@ -132,6 +142,7 @@ struct Data {
   // Will use zbuffer_color_id and shades
   RectangularArray<Color> pixels;
 };
+
 void update_data(const glm::mat4& matrix, Data& data) {
   apply_matrix_transform(matrix, data.verts);
   expand_triangles(data.verts, data.faces, data.all_triangles);
@@ -143,20 +154,32 @@ void update_data(const glm::mat4& matrix, Data& data) {
   // Set all of them to be the dummy triangle color (black).
   data.zbuffer_color_id.set_all(data.shades.size() - 1);
 
-  calculate_bcaches(data.visible_triangles, data.visible_triangles_size, data.bcaches);
+  calculate_bcaches(data.visible_triangles, data.visible_triangles_size, data.bcaches, data.temp1);
 
   calculate_bounding_boxes(data.visible_triangles, data.width, data.height, data.visible_triangles_size, data.boxes);
-  calculate_pixel_list_per_box(data.boxes, data.visible_triangles_size, data.pixel_list);
 
-  barycentric(data.bcaches, data.pixel_list, data.visible_triangles_size, data.bcoords);
-  // barycentric_alternative(data.visible_triangles, data.pixel_list, data.visible_triangles_size, data.bcoords);
+  // calculate_pixel_list_per_box(data.boxes, data.visible_triangles_size, data.pixel_list);
 
-  bbox_pixel_and_bcoords_to_triangle(data.pixel_list, data.bcoords, data.visible_triangles_size, data.triangle_bcoords,
-                                     data.triangle_pixels);
-  calculate_zvalues_per_pixel_per_triangle(data.visible_triangles, data.triangle_bcoords, data.visible_triangles_size,
-                                           data.z_values_per_triangle);
-  update_zbuffer(data.triangle_pixels, data.z_values_per_triangle, data.visible_triangles_size, data.zbuffer,
-                 data.zbuffer_color_id);
+  // barycentric(data.bcaches, data.pixel_list, data.visible_triangles_size, data.bcoords);
+
+  // bbox_pixel_and_bcoords_to_triangle(data.pixel_list, data.bcoords, data.visible_triangles_size, data.triangle_bcoords,
+  //                                  data.triangle_pixels);
+  // calculate_zvalues_per_pixel_per_triangle(data.visible_triangles, data.triangle_bcoords, data.visible_triangles_size,
+  //                                         data.z_values_per_triangle);
+  // update_zbuffer(data.triangle_pixels, data.z_values_per_triangle, data.visible_triangles_size, data.zbuffer,
+  //               data.zbuffer_color_id);
+  for (size_t i = 0; i != data.visible_triangles_size; ++i) {
+    calculate_pixel_list_per_box(data.boxes[i], data.number_of_pixels_for_this_box, data.pixel_list);
+
+    barycentric(data.bcaches[i], data.pixel_list, data.number_of_pixels_for_this_box, data.bcoords, data.temp1, data.temp2,
+                data.temp3, data.temp4, data.temp5);
+    bbox_pixel_and_bcoords_to_triangle(data.pixel_list, data.bcoords, data.number_of_pixels_for_this_box,
+                                       data.number_of_pixels_for_this_triangle, data.triangle_bcoords, data.triangle_pixels);
+    calculate_zvalues_per_pixel_per_triangle(data.visible_triangles[i], data.triangle_bcoords,
+                                             data.number_of_pixels_for_this_triangle, data.z_values_per_triangle);
+    update_zbuffer(i, data.triangle_pixels, data.z_values_per_triangle, data.number_of_pixels_for_this_triangle,
+                   data.zbuffer, data.zbuffer_color_id);
+  }
   update_pixels(data.shades, data.zbuffer_color_id, data.pixels);
 }
 
@@ -172,6 +195,12 @@ void init_data(std::string& file, int width, int height, const glm::mat4& matrix
   data.width = width;
   data.height = height;
 
+  data.temp1 = std::vector<float>(data.width * data.height);
+  data.temp2 = std::vector<float>(data.width * data.height);
+  data.temp3 = std::vector<float>(data.width * data.height);
+  data.temp4 = std::vector<float>(data.width * data.height);
+  data.temp5 = std::vector<float>(data.width * data.height);
+
   get_model(file, data.verts, data.faces);
 
   data.all_triangles = std::vector<Triangle>(data.faces.size());
@@ -185,13 +214,15 @@ void init_data(std::string& file, int width, int height, const glm::mat4& matrix
 
   // Has one extra elemnt storing a dummy triangle color (black).
   data.shades = std::vector<Color>(data.faces.size() + 1);
-  data.bcaches = std::vector<BarycentricCache>(data.faces.size());
+  data.bcaches = BarycentricCaches(data.faces.size());
   data.boxes = std::vector<Quad>(data.faces.size());
-  data.pixel_list = JaggedArray<glm::uvec2>(data.faces.size());
-  data.bcoords = JaggedArray<glm::vec3>(data.faces.size());
-  data.triangle_bcoords = JaggedArray<glm::vec3>(data.faces.size());
-  data.triangle_pixels = JaggedArray<glm::uvec2>(data.faces.size());
-  data.z_values_per_triangle = JaggedArray<float>(data.faces.size());
+
+  // The bounding box could take up the entire screen, so make the buffers that big.
+  data.pixel_list = std::vector<glm::uvec2>(data.width * data.height);
+  data.bcoords = std::vector<glm::vec3>(data.width * data.height);
+  data.triangle_bcoords = std::vector<glm::vec3>(data.width * data.height);
+  data.triangle_pixels = std::vector<glm::uvec2>(data.width * data.height);
+  data.z_values_per_triangle = std::vector<float>(data.width * data.height);
 
   data.zbuffer = RectangularArray<float>(width, height, std::numeric_limits<float>::min());
   data.zbuffer_color_id = RectangularArray<int>(width, height, 0);
