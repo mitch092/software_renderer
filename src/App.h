@@ -52,6 +52,9 @@ class App {
       // Rotate 360 degrees every second.
       renderer.update(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()));
       renderer.draw(Frame{screen});
+      //renderer.draw_wireframe(Frame{screen});
+
+
 
       SDL_UpdateWindowSurface(window);
       watch.stop_and_print_fps();
