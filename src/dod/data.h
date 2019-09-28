@@ -138,6 +138,8 @@ void update_data(const glm::mat4& matrix, Data& data) {
   update_normals(matrix, data.all_normals);
   remove_invisible_triangles_and_normals(data.all_triangles, data.all_normals, data.width, data.height,
                                          data.visible_triangles_size, data.visible_triangles, data.visible_normals);
+}
+void update_data_model(Data& data) {
   calculate_light(data.visible_normals, data.visible_triangles_size, data.shades);
   data.zbuffer.set_all(std::numeric_limits<float>::min());
   // Set all of them to be the dummy triangle color (black).
@@ -160,7 +162,7 @@ void update_data(const glm::mat4& matrix, Data& data) {
   update_pixels(data.shades, data.zbuffer_color_id, data.pixels);
 }
 
-void draw_pixels(RectangularArray<Color>& pixels, Frame& frame) {
+void draw_model_pixels(RectangularArray<Color>& pixels, Frame& frame) {
   for (int y = 0; y != pixels.get_height(); ++y) {
     for (int x = 0; x != pixels.get_width(); ++x) {
       frame.put_pixel(x, y, pixels(x, y));

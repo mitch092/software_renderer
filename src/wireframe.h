@@ -44,7 +44,7 @@ void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, Frame& frame)
   }
 }
 
-void wireframe(std::vector<Triangle>& visible_triangles, Frame& frame) {
+void draw_wireframe_pixels(std::vector<Triangle>& visible_triangles, Frame& frame) {
   for (int i = 0; i < visible_triangles.size(); ++i) {
     draw_line(visible_triangles[i].a.x, visible_triangles[i].a.y, visible_triangles[i].b.x, visible_triangles[i].b.y,
               Color{255, 255, 255}, frame);

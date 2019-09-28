@@ -50,9 +50,12 @@ class App {
         }
       }
       // Rotate 360 degrees every second.
-      renderer.update(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()));
-      renderer.draw(Frame{screen});
-      //renderer.draw_wireframe(Frame{screen});
+      //renderer.update_model(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()));
+      //renderer.draw_wireframe(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), Frame{screen});
+      renderer.draw_model(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), Frame{screen});
+
+      //renderer.draw(Frame{screen});
+
 
 
 
