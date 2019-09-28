@@ -1,0 +1,18 @@
+Fix the bugs that are preventing the pixels from displaying.
+
+Replace the RectangularArray<Color> pixels in Data.h
+with Frame.
+
+Add this to the blog:
+Each triangle gets a bounding box. Each bounding box
+needs to store barycentric coordinates. A barycentric coordinate
+is 3 floating point numbers. If the triangle takes up the entire
+screen and the screen is 1920*1080 pixels, then the bounding
+box will be 1920*1080*3 floats * 4 bytes per float.
+If I don't resize the inner vectors in JaggedArrays,
+then my program could potentially take up (for 2000 triangles
+on a 1920*1080 size screen)
+2000*1920*1080*3floats*4bytes per float, which is 59 gigabytes.
+To fix this, I recycle one buffer for every bounding box.
+Now the equation is 1*1920*1080*3*4 bytes, which is 
+25 megabytes. 
