@@ -17,7 +17,7 @@ class App {
   App(const char* name, int width, int height, std::string& file)
       : presenter{name, width, height},
         renderer{file, width, height, center_and_scale(width, height)},
-        frames{width, height, 1, Color()} {}
+        frame{width, height, Color()} {}
   
   void display() {
     Stopwatch watch;
@@ -33,16 +33,16 @@ class App {
         }
       }
 
-	  // Renderer saves pixels to Frames and then
+	  // Renderer draws pixels to Frames and then
 	  // Frames is passed into Presenter, which takes care 
 	  // of updating the window. 
 
-	  frames.set_all(Color());
+	  frame.set_all(Color());
 
       // Rotate 360 degrees every second.
-      //renderer.draw_wireframe(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), frames, 0);
-      renderer.draw_model(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), frames, 0);
-      presenter.present(frames, 0);
+      //renderer.draw_wireframe(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), frame);
+      renderer.draw_model(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), frame);
+      presenter.present(frame);
 
 
       watch.stop_and_print_fps();
@@ -52,5 +52,5 @@ class App {
  private:
   Presenter presenter;
   Renderer renderer;
-  Frames frames;
+  Frame frame;
 };

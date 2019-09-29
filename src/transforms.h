@@ -5,12 +5,18 @@
 // Add 1 to every component, divide every component by 2, then multiply the x and y
 // coordinates by the size of the screen.
 glm::mat4 center_and_scale(int width, int height) {  // Add 1.
-  auto translate = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+  glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
   // Divide every component by 2.
-  auto scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+  glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
   // Multiply x and y by width and height. Not sure about z. Need to test with rectangular windows.
-  auto scale2 = glm::scale(glm::mat4(1.0f), glm::vec3(width, height, (width + height) / 2));
-  return (scale2 * scale * translate);
+  glm::mat4 scale2 = glm::scale(glm::mat4(1.0f), glm::vec3(width, height, (width + height) / 2));
+  // Flip the model along the y axis.
+  glm::mat4 scale3 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f));
+  // Apply the y axis flip before doing anything else,
+  // otherwise the model will be off of the screen.
+  glm::mat4 show_model = scale2 * scale * translate * scale3;
+
+  return show_model;
 }
 
 glm::mat4 rotate(float delta_time, float radians) {

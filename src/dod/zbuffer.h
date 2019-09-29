@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <vector>
-#include "Frames.h"
+#include "Frame.h"
 #include "Primitives.h"
 #include "buffers.h"
 
@@ -32,11 +32,10 @@ void update_zbuffer(const JaggedArray<glm::uvec2>& triangle_pixels, const Jagged
   }
 }
 
-void update_pixels(const std::vector<Color>& shades, const RectangularArray<int>& zbuffer_color_id, Frames& frames,
-                   unsigned int frame_num) {
+void update_pixels(const std::vector<Color>& shades, const RectangularArray<int>& zbuffer_color_id, Frame& frame) {
   for (size_t y = 0; y != zbuffer_color_id.get_height(); ++y) {
     for (size_t x = 0; x != zbuffer_color_id.get_width(); ++x) {
-      frames.put_pixel(x, y, frame_num, shades[zbuffer_color_id(x, y)]);
+      frame.put_pixel(x, y, shades[zbuffer_color_id(x, y)]);
     }
   }
 }
