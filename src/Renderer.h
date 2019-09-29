@@ -10,21 +10,13 @@ class Renderer {
     init_data(file, width, height, matrix, *data.get());
   }
 
-  void draw_model(const glm::mat4& matrix, Frame& frame) {
+  void draw_model(const glm::mat4& matrix, Frames& frames, unsigned int frame_num) {
     update_data(matrix, *data.get());
-    update_data_model(*data.get());
-    draw_model_pixels(data.get()->pixels, frame);
+    update_data_model(*data.get(), frames, frame_num);
   }
-  void draw_wireframe(const glm::mat4& matrix, Frame& frame) {
+  void draw_wireframe(const glm::mat4& matrix, Frames& frames, unsigned int frame_num) {
     update_data(matrix, *data.get());
-
-    for (int y = 0; y != frame.get_height(); ++y) {
-      for (int x = 0; x != frame.get_width(); ++x) {
-        frame.put_pixel(x, y, Color{0, 0, 0});
-      }
-    }
-
-    draw_wireframe_pixels(data.get()->visible_triangles, frame);
+    draw_wireframe_pixels(data.get()->visible_triangles, frames, frame_num);
   }
 
  private:

@@ -2,9 +2,10 @@
 #include <vector>
 #include "Color.h"
 #include "Frame.h"
+#include "Frames.h"
 #include "Primitives.h"
 
-void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, Frame& frame) {
+void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, Frames& frames, unsigned int frame_num) {
   bool steep = false;
   if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
     std::swap(x0, y0);
@@ -25,7 +26,7 @@ void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, Frame& frame)
 
   if (steep) {
     for (int x = x0; x <= x1; ++x) {
-      frame.put_pixel(y, x, pixel);
+      frames.put_pixel(y, x, frame_num, pixel);
       error2 += derror2;
       if (error2 > dx) {
         y += yincr;
@@ -34,7 +35,7 @@ void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, Frame& frame)
     }
   } else {
     for (int x = x0; x <= x1; ++x) {
-      frame.put_pixel(x, y, pixel);
+      frames.put_pixel(x, y, frame_num, pixel);
       error2 += derror2;
       if (error2 > dx) {
         y += yincr;
@@ -44,13 +45,13 @@ void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, Frame& frame)
   }
 }
 
-void draw_wireframe_pixels(std::vector<Triangle>& visible_triangles, Frame& frame) {
+void draw_wireframe_pixels(std::vector<Triangle>& visible_triangles, Frames& frames, unsigned int frame_num) {
   for (int i = 0; i < visible_triangles.size(); ++i) {
     draw_line(visible_triangles[i].a.x, visible_triangles[i].a.y, visible_triangles[i].b.x, visible_triangles[i].b.y,
-              Color{255, 255, 255}, frame);
+              Color{255, 255, 255}, frames, frame_num);
     draw_line(visible_triangles[i].b.x, visible_triangles[i].b.y, visible_triangles[i].c.x, visible_triangles[i].c.y,
-              Color{255, 255, 255}, frame);
+              Color{255, 255, 255}, frames, frame_num);
     draw_line(visible_triangles[i].c.x, visible_triangles[i].c.y, visible_triangles[i].a.x, visible_triangles[i].a.y,
-              Color{255, 255, 255}, frame);
+              Color{255, 255, 255}, frames, frame_num);
   }
 }

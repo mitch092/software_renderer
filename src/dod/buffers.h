@@ -4,7 +4,6 @@
 template <typename T>
 class RectangularArray : public std::vector<T> {
  public:
-  // RectangularArray() : std::vector<T>(), _width(0), _height(0) {}
   RectangularArray() = default;
   RectangularArray(size_t width, size_t height, T preset)
       : std::vector<T>(width * height, preset), _width(width), _height(height) {}

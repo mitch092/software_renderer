@@ -8,35 +8,18 @@
 #include <string>
 #include "Benchmark.h"
 #include "Frame.h"
+#include "Presenter.h"
 #include "Renderer.h"
 #include "transforms.h"
 
 class App {
  public:
   App(const char* name, int width, int height, std::string& file)
-      : window(nullptr), screen(nullptr), renderer(file, width, height, center_and_scale(width, height)) {
-    // Propogating errors (w/o exceptions) is such a drag. Just add assertions and keep them in the release builds :/
-    int init = SDL_Init(SDL_INIT_VIDEO);
-    assert(init >= 0);
-
-    window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
-    assert(window != nullptr);
-
-    screen = SDL_GetWindowSurface(window);
-    assert(screen != nullptr);
-
-    assert(screen->h > 0);
-    assert(screen->w > 0);
-  }
-  ~App() {
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-  }
-
+      : presenter{name, width, height},
+        renderer{file, width, height, center_and_scale(width, height)},
+        frames{width, height, 1, Color()} {}
+  
   void display() {
-    assert(screen->w > 0);
-    assert(screen->h > 0);
-
     Stopwatch watch;
 
     bool quit = false;
@@ -49,23 +32,25 @@ class App {
           quit = true;
         }
       }
+
+	  // Renderer saves pixels to Frames and then
+	  // Frames is passed into Presenter, which takes care 
+	  // of updating the window. 
+
+	  frames.set_all(Color());
+
       // Rotate 360 degrees every second.
-      //renderer.update_model(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()));
-      //renderer.draw_wireframe(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), Frame{screen});
-      renderer.draw_model(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), Frame{screen});
-
-      //renderer.draw(Frame{screen});
+      //renderer.draw_wireframe(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), frames, 0);
+      renderer.draw_model(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), frames, 0);
+      presenter.present(frames, 0);
 
 
-
-
-      SDL_UpdateWindowSurface(window);
       watch.stop_and_print_fps();
     }
   }
 
  private:
-  SDL_Window* window;
-  SDL_Surface* screen;
+  Presenter presenter;
   Renderer renderer;
+  Frames frames;
 };
