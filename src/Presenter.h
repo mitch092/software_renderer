@@ -26,6 +26,7 @@ class Presenter {
   }
 
   void present(const Frame& frame) {
+	// Why 4? Because there are 4 channels. It's a magic number, maybe I can fix it later.
     SDL_UpdateTexture(texture, nullptr, frame.get_data(), frame.get_width() * 4);
     SDL_RenderCopy(renderer, texture, nullptr, nullptr);
     SDL_RenderPresent(renderer);
