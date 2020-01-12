@@ -17,7 +17,9 @@ class App {
   App(const char* name, int width, int height, std::string& file)
       : presenter{name, width, height},
         renderer{file, width, height, center_and_scale(width, height)},
-        frame{width, height, Color()} {}
+        frame{width, height, Color()} {
+
+  }
   
   void display() {
     Stopwatch watch;
@@ -50,7 +52,8 @@ class App {
   }
 
  private:
+  Scene scene;
+  RectangularArray<Color> framebuffer;
+  RectangularArray<Float> depthbuffer;
   Presenter presenter;
-  Renderer renderer;
-  Frame frame;
 };
