@@ -1,27 +1,26 @@
 #pragma once
-#include <chrono>
+#include <SDL.h>
 
 class Stopwatch {
  public:
-  Stopwatch() : start(), elapsed_seconds(0.0) {}
-  ~Stopwatch() = default;
+  Stopwatch() { update_deltatime(); }
 
-  double get_elapsed_seconds() { return elapsed_seconds; }
+  float update_deltatime() {
+    currentFrame = SDL_GetPerformanceCounter();
+    deltaTime = static_cast<float>(currentFrame - lastFrame) / static_cast<float>(SDL_GetPerformanceFrequency());
+    lastFrame = currentFrame;
+    return deltaTime;
+  }
 
-  void reset_and_start() { start = std::chrono::system_clock::now(); }
-  void stop_and_print_fps() {
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> duration = end - start;
-    elapsed_seconds = duration.count();
-
+  void print_fps() {
     std::string time;
     time.append("Elapsed time: ");
-    time.append(std::to_string(1.0 / elapsed_seconds));
+    time.append(std::to_string(1.0f / deltaTime));
     time.append(" frames per second.\n");
     std::cerr << time;
   }
 
  private:
-  std::chrono::time_point<std::chrono::system_clock> start;
-  double elapsed_seconds;
+  float deltaTime{0.0f};
+  Uint64 lastFrame{0}, currentFrame{0};
 };
