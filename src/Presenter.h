@@ -1,10 +1,12 @@
 #pragma once
 #include <SDL.h>
-#include "Frame.h"
+#include "Color.h"
+#include "dod/RectangularArray.h"
 
 class Presenter {
  public:
-  Presenter(const char* name, unsigned int width, unsigned int height) : window(nullptr), renderer(nullptr), texture(nullptr) {
+  Presenter(const char* name, unsigned int width, unsigned int height)
+      : window(nullptr), renderer(nullptr), texture(nullptr) {
     // Propogating errors (w/o exceptions) is such a drag. Just add assertions and keep them in the release builds :/
     int init = SDL_Init(SDL_INIT_VIDEO);
     assert(init >= 0);
@@ -15,19 +17,19 @@ class Presenter {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     assert(renderer != nullptr);
 
-	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
     assert(texture != nullptr);
   }
 
   ~Presenter() {
+    SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
   }
 
-  void present(const Frame& frame) {
-	// Why 4? Because there are 4 channels. It's a magic number, maybe I can fix it later.
-    SDL_UpdateTexture(texture, nullptr, frame.get_data(), frame.get_width() * 4);
+  void operator()(const RectangularArray<Color>& frame) {
+    SDL_UpdateTexture(texture, nullptr, frame.data(), frame.get_width() * sizeof(Color));
     SDL_RenderCopy(renderer, texture, nullptr, nullptr);
     SDL_RenderPresent(renderer);
   }
