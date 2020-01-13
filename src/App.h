@@ -4,23 +4,29 @@
 #include <chrono>  // For benchmarking the various draw_line versions.
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
-#include <stdexcept>
 #include <string>
 #include "Benchmark.h"
-#include "Frame.h"
+#include "Color.h"
+#include "New/Renderer.h"
+#include "New/Scene.h"
 #include "Presenter.h"
-#include "Renderer.h"
+//#include "Renderer.h"
+#include "dod/RectangularArray.h"
 #include "transforms.h"
 
 class App {
  public:
   App(const char* name, int width, int height, std::string& file)
-      : presenter{name, width, height},
-        renderer{file, width, height, center_and_scale(width, height)},
-        frame{width, height, Color()} {
-
+      : scene{glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f), width, height},
+        frame{RectangularArray<Color>(width, height, Color())},
+        presenter{name, width, height} {
+    scene.addModel(
+        Transform(glm::vec3{0, 0, 0}, glm::quatLookAt(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)), glm::vec3{1, 1, 1}), file);
+    scene.addCamera(
+        Transform(glm::vec3(0, 0, -2), glm::quatLookAt(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)), glm::vec3{1, 1, 1}));
+    scene.addLight(glm::vec3(0, 0, -1));
   }
-  
+
   void display() {
     Stopwatch watch;
 
@@ -28,32 +34,24 @@ class App {
     SDL_Event e;
 
     while (quit == false) {
-      watch.reset_and_start();
       while (SDL_PollEvent(&e) != 0) {
         if (e.type == SDL_QUIT) {
           quit = true;
         }
       }
+      glm::quat& orientation = scene.models.modifyTransform(0).orientation;
+      orientation = glm::rotate(orientation, watch.update_deltatime() * glm::two_pi<float>(), glm::vec3(0, 1, 0));
 
-	  // Renderer draws pixels to Frames and then
-	  // Frames is passed into Presenter, which takes care 
-	  // of updating the window. 
+      render(scene, frame);
+      presenter(frame);
 
-	  frame.set_all(Color());
-
-      // Rotate 360 degrees every second.
-      //renderer.draw_wireframe(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), frame);
-      renderer.draw_model(rotate(watch.get_elapsed_seconds(), glm::two_pi<float>()), frame);
-      presenter.present(frame);
-
-
-      watch.stop_and_print_fps();
+      watch.print_fps();
     }
   }
 
  private:
   Scene scene;
-  RectangularArray<Color> framebuffer;
-  RectangularArray<Float> depthbuffer;
+  // RectangularArray<float> depthbuffer;
+  RectangularArray<Color> frame;
   Presenter presenter;
 };
