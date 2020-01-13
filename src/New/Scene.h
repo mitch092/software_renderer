@@ -3,36 +3,38 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include "Transform.h"
+#include "dod/model.h"
 
 struct Scene {
-  Scene(float _far, float _near, float _fov, int _width, int _height)
-      : far(_far),
-        near(_near),
-        fov(_fov),
+  Scene(const glm::mat4& _proj, int _width, int _height)
+      : proj(_proj),
         width(_width),
         height(_height),
-        proj(glm::perspective(fov, (static_cast<float>(width) / static_cast<float>(height)), near, far)) {}
+        viewport(0.0f, 0.0f, static_cast<float>(_width), static_cast<float>(_height)) {}
 
-  void addModel(Transform _transform, std::vector<glm::uvec3> _faces, std::vector<glm::vec3> _verts) {
-    modelTransforms.push_back(_transform);
+  void addModel(Transform _transform, std::string& file) {
+    std::vector<glm::vec3> _verts;
+    std::vector<glm::uvec3> _faces;
+    get_model(file, _verts, _faces);
+    models.addTransform(_transform);
     faces.push_back(_faces);
     verts.push_back(_verts);
     transformedVerts.push_back(_verts);
   }
-  void addCamera(Transform camera) { cameras.push_back(camera); }
+  void addCamera(Transform _camera) { camera = _camera; }
   void addLight(glm::vec3 light) { directionalLights.push_back(light); }
 
-  const float far, near, fov;
   int width, height;
+  glm::vec4 viewport;
   const glm::mat4 proj;
 
-  std::vector<Transform> modelTransforms;
+  Transforms models;
   // Outer vector: models, inner vector: faces.
   std::vector<std::vector<glm::uvec3>> faces;
   std::vector<std::vector<glm::vec3>> verts;
   std::vector<std::vector<glm::vec3>> transformedVerts;
 
-  std::vector<Transform> cameras;
+  Transform camera;
 
   std::vector<glm::vec3> directionalLights;
 };
