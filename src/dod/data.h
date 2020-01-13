@@ -1,6 +1,6 @@
 #pragma once
 #include "Color.h"
-#include "Frame.h"
+#include "RectangularArray.h"
 #include "Primitives.h"
 #include "barycentric.h"
 #include "box.h"
@@ -139,7 +139,7 @@ void update_data(const glm::mat4& matrix, Data& data) {
   remove_invisible_triangles_and_normals(data.all_triangles, data.all_normals, data.width, data.height,
                                          data.visible_triangles_size, data.visible_triangles, data.visible_normals);
 }
-void update_data_model(Data& data, Frame& frame) {
+void update_data_model(Data& data, RectangularArray<Color>& frame) {
   calculate_light(data.visible_normals, data.visible_triangles_size, data.shades);
   data.zbuffer.set_all(std::numeric_limits<float>::min());
   // Set all of them to be the dummy triangle color (black).
