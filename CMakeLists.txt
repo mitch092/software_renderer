@@ -11,7 +11,7 @@ FetchContent_Declare(
 FetchContent_Declare(
   glm
   GIT_REPOSITORY https://github.com/g-truc/glm
-  GIT_TAG origin/0.9.8
+  GIT_TAG origin/master
 )
 
 FetchContent_MakeAvailable(sdl2 glm)
