@@ -27,8 +27,6 @@ std::optional<std::string> get_model_file_data(const char* filename) {
 
 // Now that we have a valid file handle, write it into buffers just like everything else.
 void get_model(std::string& _file, std::vector<glm::vec3>& verts, std::vector<glm::uvec3>& faces) {
-  // I have to move the data in the file around as a std::string and convert it to a stream here,
-  // because std::optional<std::ifstream> does not work for me!
   std::istringstream file(_file);
 
   verts.clear();
