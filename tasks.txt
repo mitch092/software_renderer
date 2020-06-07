@@ -1,0 +1,10 @@
+1. Implement all of features.
+	a. directional lights
+	b. point lights
+	c. texture mapping
+	d. fps camera w/ input
+2. Fix all of the bugs.
+3. Do necessary refactors/software integrations (FBX+Assimp)
+4. Optimize the barycentric coordinates calculations
+5. Fix all compiler diagnostics/static analysis warnings.
+6. Run profilers + optimize.
