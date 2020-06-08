@@ -12,15 +12,16 @@ class Stopwatch {
   void update() {
     lastFrame = currentFrame;
     currentFrame = SDL_GetPerformanceCounter();
+
+    float temp1 = static_cast<float>(currentFrame - lastFrame);
+    float temp2 = static_cast<float>(SDL_GetPerformanceFrequency());
+    deltatime = temp1 / temp2;
+    fps = temp2 / temp1;
   }
 
-  float get_deltatime() {
-    return static_cast<float>(currentFrame - lastFrame) / static_cast<float>(SDL_GetPerformanceFrequency());
-  }
+  float get_deltatime() { return deltatime; }
 
-  float get_fps() {
-    return static_cast<float>(SDL_GetPerformanceFrequency()) / static_cast<float>(currentFrame - lastFrame);
-  }
+  float get_fps() { return fps; }
 
   std::string get_fps_as_string() {
     std::string message;
@@ -32,4 +33,5 @@ class Stopwatch {
 
  private:
   Uint64 lastFrame, currentFrame;
+  float deltatime{0.0f}, fps{0.0f};
 };
