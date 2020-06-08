@@ -3,24 +3,33 @@
 
 class Stopwatch {
  public:
-  Stopwatch() { update_deltatime(); }
-
-  float update_deltatime() {
-    currentFrame = SDL_GetPerformanceCounter();
-    deltaTime = static_cast<float>(currentFrame - lastFrame) / static_cast<float>(SDL_GetPerformanceFrequency());
-    lastFrame = currentFrame;
-    return deltaTime;
+  Stopwatch() {
+    Uint64 counter = SDL_GetPerformanceCounter();
+    lastFrame = counter;
+    currentFrame = counter;
   }
 
-  void print_fps() {
-    std::string time;
-    time.append("Elapsed time: ");
-    time.append(std::to_string(1.0f / deltaTime));
-    time.append(" frames per second.\n");
-    std::cerr << time;
+  void update() {
+    lastFrame = currentFrame;
+    currentFrame = SDL_GetPerformanceCounter();
+  }
+
+  float get_deltatime() {
+    return static_cast<float>(currentFrame - lastFrame) / static_cast<float>(SDL_GetPerformanceFrequency());
+  }
+
+  float get_fps() {
+    return static_cast<float>(SDL_GetPerformanceFrequency()) / static_cast<float>(currentFrame - lastFrame);
+  }
+
+  std::string get_fps_as_string() {
+    std::string message;
+    message.append("Elapsed time: ");
+    message.append(std::to_string(get_fps()));
+    message.append(" frames per second.\n");
+    return message;
   }
 
  private:
-  float deltaTime{0.0f};
-  Uint64 lastFrame{0}, currentFrame{0};
+  Uint64 lastFrame, currentFrame;
 };

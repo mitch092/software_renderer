@@ -1,10 +1,12 @@
 #pragma once
 #include <SDL.h>
 #include <assert.h>
+
 #include <chrono>  // For benchmarking the various draw_line versions.
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <string>
+
 #include "Benchmark.h"
 #include "Color.h"
 #include "New/Renderer.h"
@@ -12,7 +14,6 @@
 #include "Presenter.h"
 //#include "Renderer.h"
 #include "dod/RectangularArray.h"
-#include "transforms.h"
 
 class App {
  public:
@@ -34,18 +35,25 @@ class App {
     SDL_Event e;
 
     while (quit == false) {
+      watch.update();
+
       while (SDL_PollEvent(&e) != 0) {
         if (e.type == SDL_QUIT) {
           quit = true;
         }
       }
-      glm::quat& orientation = scene.models.modifyTransform(0).orientation;
-      orientation = glm::rotate(orientation, watch.update_deltatime() * glm::two_pi<float>(), glm::vec3(0, 1, 0));
+      
+      {
+        // Get the orientation of the first model.
+        glm::quat& orientation = scene.models.modifyTransform(0).orientation;
+        // Rotate it in the positive y direction by 2 pi radians per second.
+        orientation = glm::rotate(orientation, watch.get_deltatime() * glm::two_pi<float>(), glm::vec3(0, 1, 0));
+      }
 
       render(scene, frame);
       presenter(frame);
 
-      watch.print_fps();
+      std::cerr << watch.get_fps_as_string();
     }
   }
 
