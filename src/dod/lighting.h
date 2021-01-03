@@ -19,3 +19,16 @@ void calculate_light(const std::vector<glm::vec3>& normals, const size_t& visibl
   assert(shades.size() - 1 == visible_triangles_size);
   shades[visible_triangles_size] = Color{0, 0, 0};
 }
+
+float calculate_directional_light(const std::vector<glm::vec3>& directionalLights, const glm::vec3& normal) {
+  float intensity = 0.0f;
+  for (const glm::vec3& directionalLight : directionalLights) {
+    float result = glm::dot(normal, directionalLight);
+    if (result > 0.0f) intensity += result;
+    if (intensity >= 1.0f) {
+      intensity = 1.0f;
+      break;
+    }
+  }
+  return intensity;
+}

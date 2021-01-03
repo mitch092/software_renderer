@@ -7,6 +7,8 @@ class Stopwatch {
     Uint64 counter = SDL_GetPerformanceCounter();
     lastFrame = counter;
     currentFrame = counter;
+    deltatime = 0.0f;
+    fps = 0.0f;
   }
 
   void update() {
@@ -33,5 +35,5 @@ class Stopwatch {
 
  private:
   Uint64 lastFrame, currentFrame;
-  float deltatime{0.0f}, fps{0.0f};
+  float deltatime, fps;
 };

@@ -18,12 +18,8 @@ class RectangularArray : public std::vector<T> {
     }
   }
 
-  std::optional<T&> get(size_t x, size_t y) {
-    if (in_bounds(x, y)) {
-      return {this->operator[](x + y * _width)};
-    } else {
-      return std::nullopt;
-    }
+  decltype(auto) get(const size_t& x, const size_t& y) const {
+    return in_bounds(x, y) ? std::optional(this->operator[](x + y * _width)) : std::nullopt;
   }
 
   void set_all(T value) { std::fill(this->begin(), this->end(), value); }
@@ -33,11 +29,12 @@ class RectangularArray : public std::vector<T> {
     _height = height;
     this->resize(_width * _height);
   }
-  size_t get_width() const { return _width; }
-  size_t get_height() const { return _height; }
+  decltype(auto) get_width() const { return _width; }
+  decltype(auto) get_height() const { return _height; }
 
   bool in_bounds(const size_t x, const size_t y) const { return (0 <= x && x < get_width() && 0 <= y && y < get_height()); }
 
  private:
-  size_t _width, _height;
+  // Remove height. Not needed.
+  typename std::vector<T>::size_type _width, _height;
 };

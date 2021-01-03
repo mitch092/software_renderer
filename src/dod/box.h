@@ -2,8 +2,24 @@
 #include <algorithm>
 #include <vector>
 #include "Primitives.h"
-#include "buffers.h"
 
+glm::uvec4 calculate_bounding_box(const Triangle& tri, const int width, const int height) {
+    // Create a bounding box that perfectly wraps around the triangle.
+  int left = std::min(tri.a.x, std::min(tri.b.x, tri.c.x));
+  int right = std::max(tri.a.x, std::max(tri.b.x, tri.c.x));
+  int bottom = std::min(tri.a.y, std::min(tri.b.y, tri.c.y));
+  int top = std::max(tri.a.y, std::max(tri.b.y, tri.c.y));
+
+  // Now restrict it so that it's only in the viewport.
+  left = std::max(left, 0);
+  right = std::min(right, width - 1);
+  bottom = std::max(bottom, 0);
+  top = std::min(top, height - 1);
+
+  return glm::uvec4{left, bottom, right, top};
+}
+
+/*
 void calculate_bounding_boxes(const std::vector<Triangle>& triangles, const int width, const int height,
                               const size_t& visible_triangles_size, std::vector<Quad>& boxes) {
   for (size_t i = 0; i != visible_triangles_size; ++i) {
@@ -57,3 +73,4 @@ void bbox_pixel_and_bcoords_to_triangle(const JaggedArray<glm::uvec2>& pixels_pe
     }
   }
 }
+*/

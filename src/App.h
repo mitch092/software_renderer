@@ -19,6 +19,7 @@ class App {
  public:
   App(const char* name, int width, int height, std::string& file)
       : scene{glm::perspective(45.0f, (float)width / height, 0.1f, 1000.0f), width, height},
+        depthbuffer{RectangularArray<float>(width, height, std::numeric_limits<float>::min())},
         frame{RectangularArray<Color>(width, height, Color())},
         presenter{name, width, height} {
     scene.addModel(
@@ -50,7 +51,7 @@ class App {
         orientation = glm::rotate(orientation, watch.get_deltatime() * glm::two_pi<float>(), glm::vec3(0, 1, 0));
       }
 
-      render(scene, frame);
+      render(scene, frame, depthbuffer);
       presenter(frame);
 
       std::cerr << watch.get_fps_as_string();
@@ -59,7 +60,7 @@ class App {
 
  private:
   Scene scene;
-  // RectangularArray<float> depthbuffer;
+  RectangularArray<float> depthbuffer;
   RectangularArray<Color> frame;
   Presenter presenter;
 };

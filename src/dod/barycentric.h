@@ -7,10 +7,31 @@
 // I need to optimize everything in this file more!
 
 struct BarycentricCache {
-  glm::vec3 v0, v1, tria;
+  BarycentricCache(const Triangle& triangle) {
+    v0 = triangle.b - triangle.a;
+    v1 = triangle.c - triangle.a;
+    tria = glm::vec2(triangle.a);
+    invDenom = 1.0f / (v0.x * v1.y - v1.x * v0.y);
+  }
+
+  glm::vec3 calculate_barycentric_coordinates(const glm::uvec2& pixel) {
+    glm::vec2 v2 = glm::vec2(pixel) - tria;
+    float v = (v2.x * v1.y - v1.x * v2.y) * invDenom;
+    float w = (v0.x * v2.y - v2.x * v0.y) * invDenom;
+    float u = 1.0f - v - w;
+    return glm::vec3(u, v, w);
+  }
+
+  glm::vec3 v0, v1;
+  glm::vec2 tria;
   float invDenom;
 };
 
+
+
+
+
+/*
 void calculate_bcaches(const std::vector<Triangle>& triangles, const size_t& visible_triangles_size,
                        std::vector<BarycentricCache>& bcaches) {
   for (size_t i = 0; i != visible_triangles_size; ++i) {
@@ -20,6 +41,8 @@ void calculate_bcaches(const std::vector<Triangle>& triangles, const size_t& vis
     bcaches[i] = BarycentricCache{v0, v1, triangles[i].a, invDenom};
   }
 }
+
+
 
 void barycentric(const std::vector<BarycentricCache>& bcaches, const JaggedArray<glm::uvec2>& pixel_list,
                  const size_t& visible_triangles_size, JaggedArray<glm::vec3>& bcoords_per_box) {
@@ -61,4 +84,4 @@ void barycentric_alternative(const std::vector<Triangle>& triangles, const Jagge
       bcoords_per_box[i].emplace_back(u, v, w);
     }
   }
-}
+}*/
