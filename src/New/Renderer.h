@@ -10,7 +10,7 @@ void vertex_shader(const glm::vec4& viewport, const glm::mat4& view, const glm::
                    std::vector<std::vector<glm::vec3>>& trans) {
   for (int i = 0; i != verts.size(); ++i) {
     for (int j = 0; j != verts[i].size(); ++j) {
-      trans[i][j] = glm::project(verts[i][j], view * model[i], proj, viewport);
+      trans[i][j] = glm::project(verts[i][j], view * model[i], proj, viewport);  
     }
   }
 }
@@ -42,7 +42,8 @@ void pixel_shader_directional_lights(const std::vector<std::vector<glm::uvec3>>&
         // There's a bug here.
         glm::vec3 normal = glm::normalize(glm::cross(tri.c - tri.a, tri.b - tri.a));
         // Calculate the shade of the triangle (the color of all of the pixels).
-        float intensity = calculate_directional_light(directionalLights, normal);
+        float intensity = glm::clamp(glm::dot(directionalLights[0], normal), 0.0f, 1.0f);  // calculate_directional_light(directionalLights, normal);
+        
 
         Uint8 shade = static_cast<Uint8>(intensity * 255);
         Color triangleShade{shade, shade, shade};

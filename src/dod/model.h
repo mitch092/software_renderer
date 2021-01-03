@@ -2,27 +2,24 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include <iostream>
-#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "Primitives.h"
 
 // Make sure the file can be opened.
 // Keep this separated from the act of reading the file.
 // Isolating the parts of the program that can fail seems like a good idea to me.
-std::optional<std::string> get_model_file_data(const char* filename) {
+std::string get_model_file_data(const char* filename) {
   std::ifstream in(filename, std::ifstream::in);
-  if (!in.fail()) {
-    in.seekg(0, std::ios::end);
-    size_t size = in.tellg();
-    std::string buffer(size, ' ');
-    in.seekg(0);
-    in.read(&buffer[0], size);
-    return {buffer};
-  } else {
-    return std::nullopt;
-  }
+  assert(!in.fail());
+  in.seekg(0, std::ios::end);
+  size_t size = in.tellg();
+  std::string buffer(size, ' ');
+  in.seekg(0);
+  in.read(&buffer[0], size);
+  return {buffer};
 }
 
 // Now that we have a valid file handle, write it into buffers just like everything else.

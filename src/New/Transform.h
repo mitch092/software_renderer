@@ -9,10 +9,10 @@ struct Transform {
             glm::vec3 scale = glm::vec3(1, 1, 1))
       : position(position), orientation(orientation), scale(scale) {}
 
-  glm::mat4 getTransformMatrix() { return glm::translate(position) * glm::mat4_cast(orientation) * glm::scale(scale); }
+  glm::mat4 getTransformMatrix() { return glm::translate(position) * glm::toMat4(orientation) * glm::scale(scale); }
 
   glm::mat4 getInverseTransformMatrix() {
-    return glm::translate(-1.0f * position) * glm::mat4_cast(glm::conjugate(orientation)) *
+    return glm::translate(-1.0f * position) * glm::toMat4(glm::conjugate(orientation)) *
            glm::scale(glm::mat4(1.0f), glm::vec3(1.0f / scale.x, 1.0f / scale.y, 1.0f / scale.z));
   }
 
