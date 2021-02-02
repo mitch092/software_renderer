@@ -42,3 +42,6 @@ cmake.exe --build .
 # Unity build:
 cmake -DCMAKE_C_COMPILER=icl -DCMAKE_CXX_COMPILER=icl -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_UNITY_BUILD=ON -DCMAKE_UNITY_BUILD_BATCH_SIZE=0 -DLIBC=YES -G "NMake Makefiles" ../../
 cmake.exe --build .
+
+# Intel licence expired. Using VS and a working latest Ninja:
+cmake -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLIBC=YES -G "Ninja" ../../
