@@ -1,7 +1,7 @@
 #pragma once
 #include "Color.h"
-#include "dod/RectangularArray.h"
 #include "Primitives.h"
+#include "dod/RectangularArray.h"
 
 void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, RectangularArray<Color>& frame) {
   bool steep = false;
@@ -24,7 +24,9 @@ void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, RectangularAr
 
   if (steep) {
     for (int x = x0; x <= x1; ++x) {
-      frame.set(y, x, pixel);
+      if (frame.in_bounds(y, x)) {
+        frame.set(y, x, pixel);
+      }
       error2 += derror2;
       if (error2 > dx) {
         y += yincr;
@@ -33,7 +35,9 @@ void draw_line(int x0, int y0, int x1, int y1, const Color& pixel, RectangularAr
     }
   } else {
     for (int x = x0; x <= x1; ++x) {
-      frame.set(x, y, pixel);
+      if (frame.in_bounds(x, y)) {
+        frame.set(x, y, pixel);
+      }
       error2 += derror2;
       if (error2 > dx) {
         y += yincr;

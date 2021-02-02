@@ -12,11 +12,11 @@ int main(int argc, char* argv[]) {
   return EXIT_SUCCESS;
 }
 */
-
 #include <SDL.h>
 
 #include <cstdlib>
 #include <fstream>
+#include <glm/ext.hpp>
 #include <glm/ext/quaternion_float.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
 
 #include "Benchmark.h"
 #include "Color.h"
+#include "New/wireframe.h"
 #include "Primitives.h"
 #include "dod/RectangularArray.h"
 #include "dod/barycentric.h"
@@ -37,6 +38,9 @@ struct WindowInfo {
   std::string name;
   Uint32 width;
   Uint32 height;
+  Uint32 fov;
+  float near;
+  float far;
 };
 
 struct Transform {
@@ -46,14 +50,16 @@ struct Transform {
 };
 
 struct Mesh {
+  const std::vector<glm::uvec3> index_array;
   const std::vector<glm::vec3> original_vertex_array;
   std::vector<glm::vec3> transformed_vertex_array;
-  const std::vector<glm::uvec3> index_array;
 };
 
 struct Scene {
   // The meshes to load into this scene.
+  // The ordering of the loaded meshes matches this.
   std::vector<std::string> mesh_names;
+  // A model is just a transform and a handle to a mesh (implemented as a single int).
   // Two or more models can point to the same mesh (instancing).
   std::vector<int> model_to_mesh_names_id;
   std::vector<Transform> model_transforms;
@@ -62,7 +68,7 @@ struct Scene {
   Uint32 active_camera_id;
   // Directional lights are just normalized 3D directional vectors.
   std::vector<glm::vec3> directional_lights;
-  // Point lights are 3D point vectors (not implemented).
+  // Point lights are 3D point vectors (not implemented yet).
 };
 
 std::string read_file(std::string filename) {
@@ -107,7 +113,7 @@ Mesh get_mesh(std::string filename) {
     }
   }
   std::cerr << "# v# " << verts.size() << " f# " << faces.size() << std::endl;
-  return Mesh{verts, verts, faces};
+  return Mesh{faces, verts, verts};
 }
 
 std::vector<Mesh> get_meshes(std::vector<std::string> filenames) {
@@ -129,18 +135,42 @@ inline bool triangle_in_frame(const Triangle& tri, int width, int height) {
          pixel_in_frame(tri.c.x, tri.c.y, width, height);
 }
 
-inline glm::mat4 getTransformMatrix(Transform& transform) {
-  return glm::translate(transform.position) * glm::toMat4(transform.orientation) * glm::scale(transform.scale);
+inline glm::mat4 getModelMatrix(const Transform& transform) {
+  glm::mat4 model = glm::mat4(1.0f);
+  model = glm::scale(transform.scale) * model;
+  model = glm::toMat4(transform.orientation) * model;
+  model = glm::translate(transform.position) * model;
+  return model;
 }
 
-inline glm::mat4 getInverseTransformMatrix(Transform& transform) {
-  return glm::translate(-1.0f * transform.position) * glm::toMat4(glm::conjugate(transform.orientation)) *
-         glm::scale(glm::mat4(1.0f),
-                    glm::vec3(1.0f / transform.scale.x, 1.0f / transform.scale.y, 1.0f / transform.scale.z));
+inline glm::mat4 getViewMatrix(const Transform& transform) {
+  glm::mat4 view = glm::mat4(1.0f);
+  view = glm::scale(glm::vec3(1.0f) / transform.scale) * view;
+  view = glm::toMat4(glm::conjugate(transform.orientation)) * view;
+  view = glm::translate(-transform.position) * view;
+  return view;
+}
+
+inline glm::mat4 getProjectionMatrix(const WindowInfo& info) {
+  glm::mat4 proj = glm::mat4(1.0f);
+  proj =
+      glm::perspectiveFov(glm::radians((float)info.fov), (float)info.width, (float)info.height, info.near, info.far) * proj;
+  // The SDL render function expects the origin point to be in the upper left corner of the screen, with the positive y axis
+  // pointing down. The rest of this program expects the origin point to be in the lower left corner of the screen, with the
+  // positive y axis pointing up. Flipping just the y coordinate, either in the framebuffer or during projection, changes the
+  // coordinates so that the image won't appear upside down.
+  proj = glm::scale(glm::vec3(1.0f, -1.0f, 1.0f)) * proj;
+  return proj;
+}
+
+inline glm::quat quatLookAtPoint(const glm::vec3& from, const glm::vec3& to, const glm::vec3& up = glm::vec3(0, 1, 0)) {
+  glm::vec3 direction = glm::normalize(to - from);
+  glm::quat orientation = glm::quatLookAt(direction, up);
+  return orientation;
 }
 
 int main(int argc, char* argv[]) {
-  WindowInfo windowInfo{"tinyrenderer in SDL", 800, 800};
+  const WindowInfo windowInfo{"Tinyrenderer in SDL", 800, 800, 90, 0.1f, 100.0f};
 
   if (int init = SDL_Init(SDL_INIT_VIDEO); init >= 0) {
     if (SDL_Window* window = SDL_CreateWindow(windowInfo.name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -150,26 +180,27 @@ int main(int argc, char* argv[]) {
         if (SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
                                                      windowInfo.width, windowInfo.height);
             texture != nullptr) {
+          // Create scene.
           Scene scene;
           scene.mesh_names.push_back("african_head.obj");
 
           scene.model_to_mesh_names_id.push_back(0);
           scene.model_transforms.push_back(
-              Transform{glm::vec3(0, 0, 0), glm::quatLookAt(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)), glm::vec3(1, 1, 1)});
+              Transform{glm::vec3(0, 0, 0), quatLookAtPoint(glm::vec3(0, 0, 0), glm::vec3(0, 0, 2)), glm::vec3(1)});
 
           scene.camera_transforms.push_back(
-              Transform{glm::vec3(0, 0, 3), glm::quatLookAt(glm::vec3(0, 0, -1), glm::vec3(0, 1, 0)), glm::vec3(1, 1, 1)});
+              Transform{glm::vec3(0, 0, 2), quatLookAtPoint(glm::vec3(0, 0, 2), glm::vec3(0, 0, 0)), glm::vec3(1)});
+
           scene.active_camera_id = 0;
 
-          scene.directional_lights.push_back(glm::vec3(0, 0, 1));
+          scene.directional_lights.push_back(glm::vec3(0, 0, -1));
 
           std::vector<Mesh> meshes = get_meshes(scene.mesh_names);
 
           RectangularArray<Color> frame(windowInfo.width, windowInfo.height, Color());
           RectangularArray<float> depthbuffer(windowInfo.width, windowInfo.height, std::numeric_limits<float>::min());
 
-          glm::mat4 proj =
-              glm::perspective(glm::radians(45.0f), (float)windowInfo.width / (float)windowInfo.height, 0.1f, 100.0f);
+          glm::mat4 proj = getProjectionMatrix(windowInfo);
 
           Stopwatch watch;
           bool quit = false;
@@ -181,80 +212,108 @@ int main(int argc, char* argv[]) {
             while (SDL_PollEvent(&e) != 0) {
               if (e.type == SDL_QUIT) {
                 quit = true;
+              } else if (e.type == SDL_KEYDOWN) {
+                Transform& trans = scene.camera_transforms[scene.active_camera_id];
+                // Transform& trans = scene.model_transforms[0];
+                switch (e.key.keysym.sym) {
+                    // Forward
+                  case SDLK_w:
+                    trans.position += glm::vec3(0, 0, -1);
+                    break;
+                    // Left
+                  case SDLK_a:
+                    trans.position += glm::vec3(-1, 0, 0);
+                    break;
+                    // Back
+                  case SDLK_s:
+                    trans.position += glm::vec3(0, 0, 1);
+                    break;
+                    // Right
+                  case SDLK_d:
+                    trans.position += glm::vec3(1, 0, 0);
+                    break;
+                    // Up
+                  case SDLK_e:
+                    trans.position += glm::vec3(0, 1, 0);
+                    break;
+                    // Down
+                  case SDLK_q:
+                    trans.position += glm::vec3(0, -1, 0);
+                    break;
+                }
               }
             }
 
             scene.model_transforms[0].orientation = glm::rotate(
                 scene.model_transforms[0].orientation, watch.get_deltatime() * glm::two_pi<float>(), glm::vec3(0, 1, 0));
 
-            glm::mat4 view = getInverseTransformMatrix(scene.camera_transforms[scene.active_camera_id]);
-
-            for (int i = 0; i != scene.model_transforms.size(); ++i) {
-              glm::mat4 model = getTransformMatrix(scene.model_transforms[i]);
-              Mesh& mesh = meshes[scene.model_to_mesh_names_id[i]];
-              for (int j = 0; j != mesh.original_vertex_array.size(); ++j) {
-                //mesh.transformed_vertex_array[j] = glm::project(mesh.original_vertex_array[j], view * model, proj,
-                //                                                glm::vec4{0.0f, 0.0f, windowInfo.width, windowInfo.height});
-                glm::vec4 vec4(proj * view * model * glm::vec4(mesh.original_vertex_array[j], 1.0f));
-                vec4 /= vec4.w;
-                glm::vec3 vec3(vec4);
-                vec3 += 1.0f;
-                vec3 *= 0.5f;
-
-                vec3.x *= windowInfo.width;
-                vec3.y *= windowInfo.height;
-                vec3.z *= 10000; //??? 
-
-                mesh.transformed_vertex_array[j] = vec3;
-              }
-            }
+            glm::mat4 view = getViewMatrix(scene.camera_transforms[scene.active_camera_id]);
 
             frame.set_all(Color());
             depthbuffer.set_all(std::numeric_limits<float>::min());
 
+            // For every model in the scene:
             for (int i = 0; i != scene.model_transforms.size(); ++i) {
+              // Get the model matrix.
+              glm::mat4 model = getModelMatrix(scene.model_transforms[i]);
+              // Get the mesh that the model is pointing to.
               Mesh& mesh = meshes[scene.model_to_mesh_names_id[i]];
+
+              // Vertex Shader
+              // For every vertex in the mesh:
+              for (int j = 0; j != mesh.original_vertex_array.size(); ++j) {
+                // Transform the vertex.
+                mesh.transformed_vertex_array[j] = glm::project(mesh.original_vertex_array[j], view * model, proj,
+                                                                glm::vec4{0.0f, 0.0f, windowInfo.width, windowInfo.height});
+              }
+
+              // Pixel Shader
+              // For every face in the mesh:
               for (int j = 0; j != mesh.index_array.size(); ++j) {
-                // Expand a triangle.
+                // Expand the face (a triangle).
                 const glm::uvec3& face = mesh.index_array[j];
                 Triangle tri{mesh.transformed_vertex_array[face.x], mesh.transformed_vertex_array[face.y],
                              mesh.transformed_vertex_array[face.z]};
                 // Check if the triangle is in the frame.
                 if (triangle_in_frame(tri, frame.get_width(), frame.get_height())) {
-                  // Get its normal vector.
+                  if constexpr (false) {
+                    // Get its normal vector.
+                    glm::vec3 normal = glm::normalize(glm::cross(tri.c - tri.a, tri.b - tri.a));
+                    // Calculate the shade of the triangle (the color of all of the pixels).
+                    float intensity = glm::clamp(glm::dot(scene.directional_lights[0], normal), 0.0f, 1.0f);
+                    // float intensity = calculate_directional_light(scene.directional_lights, normal);
 
-                  glm::vec3 normal = glm::normalize(glm::cross(tri.c - tri.a, tri.b - tri.a));
-                  // Calculate the shade of the triangle (the color of all of the pixels).
-                  // float intensity = glm::clamp(glm::dot(scene.directional_lights[0], normal), 0.0f, 1.0f);
-                  float intensity = calculate_directional_light(scene.directional_lights, normal);
+                    Uint8 shade = static_cast<Uint8>(intensity * 255);
+                    Color triangleShade{shade, shade, shade};
+                    // Create a barycentric cache.
+                    BarycentricCache bary(tri);
+                    glm::uvec4 bbox = calculate_bounding_box(tri, frame.get_width(), frame.get_height());
 
-                  Uint8 shade = static_cast<Uint8>(intensity * 255);
-                  Color triangleShade{shade, shade, shade};
-                  // Create a barycentric cache.
-                  BarycentricCache bary{tri};
-                  glm::uvec4 bbox = calculate_bounding_box(tri, frame.get_width(), frame.get_height());
+                    // left bottom right top
+                    // x    y      z     w
 
-                  // left bottom right top
-                  // x    y      z     w
-
-                  // For every pixel in the bounding box,
-                  for (auto y = bbox.y; y != bbox.w + 1; ++y) {
-                    for (auto x = bbox.x; x != bbox.z + 1; ++x) {
-                      // then calculate the barycentric coordinates.
-                      glm::vec3 bcoords = bary.calculate_barycentric_coordinates(glm::uvec2{x, y});
-                      // If the pixel is inside the triangle,
-                      if (bcoords.x >= 0.0f && bcoords.y >= 0.0f && bcoords.z >= 0.0f) {
-                        // then calculate the z value for the pixel.
-                        float z = tri.a.z * bcoords.x + tri.b.z * bcoords.y + tri.c.z * bcoords.z;
-                        // If the z value is greater than what's currencly in the depth buffer,
-                        decltype(auto) depthbuffer_z = depthbuffer.get(x, y);
-                        if (depthbuffer_z.has_value() && z > depthbuffer_z.value()) {
-                          // then update the depth buffer and the framebuffer.
-                          depthbuffer.set(x, y, z);
-                          frame.set(x, y, triangleShade);
+                    // For every pixel in the bounding box,
+                    for (auto y = bbox.y; y != bbox.w + 1; ++y) {
+                      for (auto x = bbox.x; x != bbox.z + 1; ++x) {
+                        // then calculate the barycentric coordinates.
+                        glm::vec3 bcoords = bary.calculate_barycentric_coordinates(glm::uvec2{x, y});
+                        // If the pixel is inside the triangle,
+                        if (bcoords.x >= 0.0f && bcoords.y >= 0.0f && bcoords.z >= 0.0f) {
+                          // then calculate the z value for the pixel.
+                          float z = tri.a.z * bcoords.x + tri.b.z * bcoords.y + tri.c.z * bcoords.z;
+                          // If the z value is greater than what's currently in the depth buffer,
+                          if (depthbuffer.in_bounds(x, y) && z > depthbuffer.get(x, y)) {
+                            // then update the depth buffer and the framebuffer.
+                            depthbuffer.set(x, y, z);
+                            frame.set(x, y, triangleShade);
+                          }
                         }
                       }
                     }
+                  }
+                  // We can use the wireframe renderer for debugging the vertex shader.
+                  else {
+                    draw_wireframe_triangle(tri, Color(255, 255, 255), frame);
                   }
                 }
               }
@@ -266,7 +325,6 @@ int main(int argc, char* argv[]) {
 
             std::cerr << watch.get_fps_as_string();
           }
-
           SDL_DestroyTexture(texture);
         }
         SDL_DestroyRenderer(renderer);
