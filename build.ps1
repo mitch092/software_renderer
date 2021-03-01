@@ -20,6 +20,7 @@ if($config){
     Remove-Item $builds -Force -Recurse -ErrorAction SilentlyContinue
     New-Item -Path $builds -ItemType Directory
     Push-Location -Path $builds
+    # -DLIBC=YES can be set in the CmakeLists.txt file itself. Forgot how to do this; it's done in the cmake cache files for LLVM/Clang.
     iex "cmake -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=${cmake_build} -DLIBC=YES -G `"Ninja`" ../../"
     Pop-Location
 }
