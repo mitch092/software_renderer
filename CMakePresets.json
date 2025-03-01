@@ -29,7 +29,7 @@
             "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_CXX_FLAGS_INIT": "/W3 /DEBUG:FULL> /MTd"
+                "CMAKE_CXX_FLAGS_INIT": "/W3"
             }
         },
         {
