@@ -14,7 +14,8 @@
             },
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
+                "CMAKE_CXX_COMPILER": "cl.exe",
+                "LIBC": "YES"
             },
             "condition": {
                 "type": "equals",
@@ -23,20 +24,35 @@
             }
         },
         {
-            "name": "x64-debug",
-            "displayName": "x64 Debug",
+            "name": "debug",
+            "displayName": "Debug",
             "inherits": "windows-base",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS_INIT": "/W3 /DEBUG:FULL> /MTd"
             }
         },
         {
-            "name": "x64-release",
-            "displayName": "x64 Release",
+            "name": "release",
+            "displayName": "Release",
             "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "app-debug",
+            "displayName": "App Debug Build",
+            "configurePreset": "debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "app-release",
+            "displayName": "App Release Build",
+            "configurePreset": "release",
+            "configuration": "Release"
         }
     ]
 }
