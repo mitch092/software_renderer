@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
 #include <glm/ext.hpp>
 #include <glm/ext/quaternion_float.hpp>
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 #include <iostream>
