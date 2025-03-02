@@ -23,7 +23,7 @@
             }
         },
         {
-            "name": "debug",
+            "name": "config-debug",
             "displayName": "Debug",
             "inherits": "windows-base",
             "cacheVariables": {
@@ -32,7 +32,7 @@
             }
         },
         {
-            "name": "release",
+            "name": "config-release",
             "displayName": "Release",
             "inherits": "windows-base",
             "cacheVariables": {
@@ -42,16 +42,44 @@
     ],
     "buildPresets": [
         {
-            "name": "app-debug",
+            "name": "build-debug",
             "displayName": "App Debug Build",
-            "configurePreset": "debug",
+            "configurePreset": "config-debug",
             "configuration": "Debug"
         },
         {
-            "name": "app-release",
+            "name": "build-release",
             "displayName": "App Release Build",
-            "configurePreset": "release",
+            "configurePreset": "config-release",
             "configuration": "Release"
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "workflow-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "config-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "build-debug"
+                }
+            ]
+        },
+        {
+            "name": "workflow-release",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "config-release"
+                },
+                {
+                    "type": "build",
+                    "name": "build-release"
+                }
+            ]
         }
     ]
 }
